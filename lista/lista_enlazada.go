@@ -17,6 +17,22 @@ type iterListaEnlazada[T any] struct {
 
 // Primitivas de lista
 
+func (lista listaEnlazada[T]) EstaVacia() bool {
+	return lista.primero == nil
+}
+
+func (lista listaEnlazada[T]) InsertarPrimero(elemento T) {
+	nuevoNodo := &nodoLista[T]{dato: elemento, siguiente: lista.primero}
+	lista.primero = nuevoNodo
+}
+
+func (lista listaEnlazada[T]) VerPrimero() T {
+	if lista.EstaVacia() {
+		panic("La lista esta vacia")
+	}
+	return lista.primero.dato
+}
+
 func (lista listaEnlazada[T]) Iterar(visitar func(T) bool) {
 	// ...
 }
