@@ -62,7 +62,7 @@ func (lista *listaEnlazada[T]) BorrarPrimero() T {
 	primero := lista.VerPrimero()
 	lista.primero = lista.primero.siguiente
 
-	if lista.largo == 1 {
+	if lista.EstaVacia() {
 		lista.ultimo = nil
 	}
 
@@ -114,11 +114,7 @@ func (iter *iterListaEnlazada[T]) VerActual() T {
 }
 
 func (iter *iterListaEnlazada[T]) HaySiguiente() bool {
-	if iter.actual.siguiente != nil {
-		return true
-	}
-
-	return false
+	return iter.actual != nil
 }
 
 func (iter *iterListaEnlazada[T]) Siguiente() {
@@ -163,10 +159,6 @@ func (iter *iterListaEnlazada[T]) Borrar() T {
 
 	if siguiente == nil {
 		iter.lista.ultimo = iter.anterior
-	}
-
-	if iter.lista.primero == nil {
-		iter.lista.ultimo = nil
 	}
 
 	iter.actual = siguiente
