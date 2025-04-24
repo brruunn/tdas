@@ -23,6 +23,10 @@ const (
 	_MENSAJE_PANIC_ITER_BORRAR    = "No hay más elementos en la lista para borrar"
 )
 
+func CrearListaEnlazada[T any]() Lista[T] {
+	return &listaEnlazada[T]{}
+}
+
 // Primitivas de lista
 
 func (lista *listaEnlazada[T]) EstaVacia() bool {
@@ -55,12 +59,12 @@ func (lista *listaEnlazada[T]) InsertarUltimo(elemento T) {
 
 func (lista *listaEnlazada[T]) BorrarPrimero() T {
 	primero := lista.VerPrimero()
+	lista.primero = lista.primero.siguiente
 
 	if lista.largo == 1 {
 		lista.ultimo = nil
 	}
 
-	lista.primero = lista.primero.siguiente
 	lista.largo--
 	return primero
 }
@@ -93,7 +97,18 @@ func (lista *listaEnlazada[T]) Iterar(visitar func(T) bool) {
 	}
 }
 
+func (lista *listaEnlazada[T]) Iterador() IteradorLista[T] {
+	return &iterListaEnlazada[T]{actual: lista.primero, lista: lista}
+}
+
 // Primitivas de iterador externo
+
+func (iter *iterListaEnlazada[T]) VerActual() T {
+	if !iter.HaySiguiente() {
+		panic("El iterador termino de iterar")
+	}
+	return iter.actual.dato
+}
 
 func (iter *iterListaEnlazada[T]) HaySiguiente() bool {
 	if iter.actual.siguiente != nil {
@@ -109,6 +124,24 @@ func (iter *iterListaEnlazada[T]) Siguiente() {
 	}
 	iter.anterior = iter.actual
 	iter.actual = iter.actual.siguiente
+}
+
+func (iter *iterListaEnlazada[T]) Insertar(elemento T) {
+	if iter.actual == iter.lista.primero {
+		iter.lista.InsertarPrimero(elemento)
+		iter.actual = iter.lista.primero
+
+	} else {
+		nuevoNodo := &nodoLista[T]{dato: elemento, siguiente: iter.actual}
+		iter.anterior.siguiente, iter.actual = nuevoNodo, nuevoNodo
+
+		if iter.anterior == iter.lista.ultimo {
+			iter.lista.ultimo = nuevoNodo
+		}
+
+		iter.lista.largo++
+
+	}
 }
 
 func (iter *iterListaEnlazada[T]) Borrar() T {
