@@ -18,16 +18,17 @@ type iterListaEnlazada[T any] struct {
 }
 
 const (
-	_MENSAJE_PANIC_LISTA          = "La lista esta vacia"
-	_MENSAJE_PANIC_ITER_SIGUIENTE = "No hay siguiente, ya llegaste al final de la lista"
-	_MENSAJE_PANIC_ITER_BORRAR    = "No hay más elementos en la lista para borrar"
+	_MENSAJE_PANIC_LISTA = "La lista esta vacia"
+	_MENSAJE_PANIC_ITER  = "El iterador termino de iterar"
 )
 
 func CrearListaEnlazada[T any]() Lista[T] {
 	return &listaEnlazada[T]{}
 }
 
-// Primitivas de lista
+// -------------------------------------------------------------------------
+// -------------------- PRIMITIVAS DE LA LISTA ENLAZADA --------------------
+// -------------------------------------------------------------------------
 
 func (lista *listaEnlazada[T]) EstaVacia() bool {
 	return lista.primero == nil
@@ -101,11 +102,13 @@ func (lista *listaEnlazada[T]) Iterador() IteradorLista[T] {
 	return &iterListaEnlazada[T]{actual: lista.primero, lista: lista}
 }
 
-// Primitivas de iterador externo
+// -------------------------------------------------------------------------
+// -------------------- PRIMITIVAS DEL ITERADOR EXTERNO --------------------
+// -------------------------------------------------------------------------
 
 func (iter *iterListaEnlazada[T]) VerActual() T {
 	if !iter.HaySiguiente() {
-		panic("El iterador termino de iterar")
+		panic(_MENSAJE_PANIC_ITER)
 	}
 	return iter.actual.dato
 }
@@ -120,7 +123,7 @@ func (iter *iterListaEnlazada[T]) HaySiguiente() bool {
 
 func (iter *iterListaEnlazada[T]) Siguiente() {
 	if !iter.HaySiguiente() {
-		panic(_MENSAJE_PANIC_ITER_SIGUIENTE)
+		panic(_MENSAJE_PANIC_ITER)
 	}
 	iter.anterior = iter.actual
 	iter.actual = iter.actual.siguiente
@@ -146,7 +149,7 @@ func (iter *iterListaEnlazada[T]) Insertar(elemento T) {
 
 func (iter *iterListaEnlazada[T]) Borrar() T {
 	if iter.actual == nil {
-		panic(_MENSAJE_PANIC_ITER_BORRAR)
+		panic(_MENSAJE_PANIC_ITER)
 	}
 
 	dato := iter.actual.dato
