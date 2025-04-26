@@ -235,7 +235,7 @@ func TestInsertarUltimo(t *testing.T) {
 	arr := []string{"Primero", "Segundo", "Tercero"}
 
 	for _, str := range arr {
-		lista.InsertarPrimero(str)
+		lista.InsertarUltimo(str)
 	}
 
 	iter := lista.Iterador() // El iter apunta a "Primero".
@@ -256,7 +256,7 @@ func TestInsertarEnElMedio(t *testing.T) {
 	arr := []string{"Primero", "Cuarto"}
 
 	for _, str := range arr {
-		lista.InsertarPrimero(str)
+		lista.InsertarUltimo(str)
 	}
 
 	iter := lista.Iterador() // El iter apunta a "Primero".
