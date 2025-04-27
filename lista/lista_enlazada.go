@@ -63,15 +63,19 @@ func (lista *listaEnlazada[T]) InsertarUltimo(elemento T) {
 }
 
 func (lista *listaEnlazada[T]) BorrarPrimero() T {
-	primero := lista.VerPrimero()
+	if lista.EstaVacia() {
+		panic(_MENSAJE_PANIC_LISTA)
+	}
+
+	dato := lista.primero.dato
 	lista.primero = lista.primero.siguiente
+	lista.largo--
 
 	if lista.EstaVacia() {
 		lista.ultimo = nil
 	}
 
-	lista.largo--
-	return primero
+	return dato
 }
 
 func (lista *listaEnlazada[T]) VerPrimero() T {
