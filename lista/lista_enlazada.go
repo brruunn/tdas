@@ -26,6 +26,10 @@ func CrearListaEnlazada[T any]() Lista[T] {
 	return &listaEnlazada[T]{}
 }
 
+func nodoCrear[T any](dato T) *nodoLista[T] {
+	return &nodoLista[T]{dato: dato}
+}
+
 // -------------------------------------------------------------------------
 // -------------------- PRIMITIVAS DE LA LISTA ENLAZADA --------------------
 // -------------------------------------------------------------------------
@@ -38,7 +42,7 @@ func (lista *listaEnlazada[T]) InsertarPrimero(elemento T) {
 	nuevoNodo := &nodoLista[T]{dato: elemento, siguiente: lista.primero}
 	lista.primero = nuevoNodo
 
-	if lista.Largo() == 0 {
+	if lista.EstaVacia() {
 		lista.ultimo = nuevoNodo
 	}
 
