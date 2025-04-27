@@ -26,8 +26,8 @@ func CrearListaEnlazada[T any]() Lista[T] {
 	return &listaEnlazada[T]{}
 }
 
-func nodoCrear[T any](dato T) *nodoLista[T] {
-	return &nodoLista[T]{dato: dato}
+func nodoCrear[T any](dato T, siguiente *nodoLista[T]) *nodoLista[T] {
+	return &nodoLista[T]{dato: dato, siguiente: siguiente}
 }
 
 // -------------------------------------------------------------------------
@@ -39,7 +39,7 @@ func (lista *listaEnlazada[T]) EstaVacia() bool {
 }
 
 func (lista *listaEnlazada[T]) InsertarPrimero(elemento T) {
-	nuevoNodo := &nodoLista[T]{dato: elemento, siguiente: lista.primero}
+	nuevoNodo := nodoCrear(elemento, lista.primero)
 	lista.primero = nuevoNodo
 
 	if lista.EstaVacia() {
@@ -50,7 +50,7 @@ func (lista *listaEnlazada[T]) InsertarPrimero(elemento T) {
 }
 
 func (lista *listaEnlazada[T]) InsertarUltimo(elemento T) {
-	nuevoNodo := &nodoLista[T]{dato: elemento}
+	nuevoNodo := nodoCrear(elemento, nil)
 
 	if lista.EstaVacia() {
 		lista.primero = nuevoNodo
@@ -133,9 +133,8 @@ func (iter *iterListaEnlazada[T]) Insertar(elemento T) {
 	if iter.actual == iter.lista.primero {
 		iter.lista.InsertarPrimero(elemento)
 		iter.actual = iter.lista.primero
-
 	} else {
-		nuevoNodo := &nodoLista[T]{dato: elemento, siguiente: iter.actual}
+		nuevoNodo := nodoCrear(elemento, iter.actual)
 		iter.anterior.siguiente, iter.actual = nuevoNodo, nuevoNodo
 
 		if iter.anterior == iter.lista.ultimo {
@@ -143,12 +142,11 @@ func (iter *iterListaEnlazada[T]) Insertar(elemento T) {
 		}
 
 		iter.lista.largo++
-
 	}
 }
 
 func (iter *iterListaEnlazada[T]) Borrar() T {
-	if iter.actual == nil {
+	if !iter.HaySiguiente() {
 		panic(_MENSAJE_PANIC_ITER)
 	}
 
