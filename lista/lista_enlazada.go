@@ -26,8 +26,8 @@ func CrearListaEnlazada[T any]() Lista[T] {
 	return &listaEnlazada[T]{}
 }
 
-func nodoCrear[T any](dato T, siguiente *nodoLista[T]) *nodoLista[T] {
-	return &nodoLista[T]{dato: dato, siguiente: siguiente}
+func nodoCrear[T any](dato T) *nodoLista[T] {
+	return &nodoLista[T]{dato: dato}
 }
 
 // -------------------------------------------------------------------------
@@ -39,18 +39,19 @@ func (lista *listaEnlazada[T]) EstaVacia() bool {
 }
 
 func (lista *listaEnlazada[T]) InsertarPrimero(elemento T) {
-	nuevoNodo := nodoCrear(elemento, lista.primero)
-	lista.primero = nuevoNodo
+	nuevoNodo := nodoCrear(elemento)
+	nuevoNodo.siguiente = lista.primero
 
 	if lista.EstaVacia() {
 		lista.ultimo = nuevoNodo
 	}
 
+	lista.primero = nuevoNodo
 	lista.largo++
 }
 
 func (lista *listaEnlazada[T]) InsertarUltimo(elemento T) {
-	nuevoNodo := nodoCrear(elemento, nil)
+	nuevoNodo := nodoCrear(elemento)
 
 	if lista.EstaVacia() {
 		lista.primero = nuevoNodo
@@ -138,7 +139,9 @@ func (iter *iterListaEnlazada[T]) Insertar(elemento T) {
 		iter.lista.InsertarPrimero(elemento)
 		iter.actual = iter.lista.primero
 	} else {
-		nuevoNodo := nodoCrear(elemento, iter.actual)
+		nuevoNodo := nodoCrear(elemento)
+		nuevoNodo.siguiente = iter.actual
+
 		iter.anterior.siguiente, iter.actual = nuevoNodo, nuevoNodo
 
 		if iter.anterior == iter.lista.ultimo {
