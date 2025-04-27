@@ -62,8 +62,10 @@ func TestBorrarPrimeroLista(t *testing.T) {
 	}
 
 	require.Equal(t, lista.BorrarPrimero(), 9)
+
 	require.PanicsWithValue(t, _MENSAJE_PANIC_LISTA, func() { lista.VerPrimero() })
-	require.Equal(t, lista.Largo(), 0)
+	require.PanicsWithValue(t, _MENSAJE_PANIC_LISTA, func() { lista.VerUltimo() })
+	require.PanicsWithValue(t, _MENSAJE_PANIC_LISTA, func() { lista.BorrarPrimero() })
 }
 
 // Test de volumen para verificar el comportamiento con muchos elementos
@@ -71,7 +73,7 @@ func TestPruebaDeVolumen(t *testing.T) {
 	lista := TDALista.CrearListaEnlazada[int]()
 	n := 10000
 
-	for i := 0; i < n; i++ {
+	for i := range n {
 		lista.InsertarPrimero(i)
 		require.Equal(t, i, lista.VerPrimero())
 	}
@@ -149,7 +151,7 @@ func TestSumarTodosHastaSiete(t *testing.T) {
 // Itera todos los elementos, y usa algunos, hasta una condición de corte.
 func TestSumarPrimerosCincoPares(t *testing.T) {
 	lista := TDALista.CrearListaEnlazada[int]()
-	arr := []int{0, 0, 1, 3, 5, 246, 7, -246, 100, 11, 13, 15}
+	arr := []int{0, 0, 1, 3, 5, 246, 7, -246, 100, -100, 13, 15}
 
 	for _, n := range arr {
 		lista.InsertarUltimo(n)
@@ -192,6 +194,8 @@ func TestVerActual(t *testing.T) {
 	}
 
 	require.PanicsWithValue(t, _MENSAJE_PANIC_ITER, func() { iter.VerActual() })
+	require.PanicsWithValue(t, _MENSAJE_PANIC_ITER, func() { iter.Siguiente() })
+	require.PanicsWithValue(t, _MENSAJE_PANIC_ITER, func() { iter.Borrar() })
 }
 
 // Test para verificar el método HaySiguiente del iterador
@@ -227,7 +231,7 @@ func TestSiguiente(t *testing.T) {
 }
 
 // Test para verificar la inserción al principio usando el iterador
-func TestInsertarPrimero(t *testing.T) {
+func TestIteradorInsertarPrimero(t *testing.T) {
 	lista := TDALista.CrearListaEnlazada[string]()
 	iter := lista.Iterador() // El iter apunta a nil.
 
@@ -238,8 +242,28 @@ func TestInsertarPrimero(t *testing.T) {
 	require.Equal(t, lista.VerPrimero(), "Anterior a Primero")
 }
 
+// Test para verificar la inserción en medio de la lista usando el iterador
+func TestIteradorInsertarEnMedio(t *testing.T) {
+	lista := TDALista.CrearListaEnlazada[string]()
+	arr := []string{"Primero", "Cuarto"}
+
+	for _, str := range arr {
+		lista.InsertarUltimo(str)
+	}
+
+	iter := lista.Iterador() // El iter apunta a "Primero".
+
+	iter.Siguiente()         // El iter apunta a "Cuarto".
+	iter.Insertar("Segundo") // "Primero" y el iter apuntan a "Segundo", y éste, a "Cuarto".
+	require.Equal(t, iter.VerActual(), "Segundo")
+
+	iter.Siguiente()         // El iter vuelve a apuntar a "Cuarto".
+	iter.Insertar("Tercero") // "Segundo" y el iter apuntan a "Tercero", y éste, a "Cuarto".
+	require.Equal(t, iter.VerActual(), "Tercero")
+}
+
 // Test para verificar la inserción al final usando el iterador
-func TestInsertarUltimo(t *testing.T) {
+func TestIteradorInsertarUltimo(t *testing.T) {
 	lista := TDALista.CrearListaEnlazada[string]()
 	arr := []string{"Primero", "Segundo", "Tercero"}
 
@@ -258,26 +282,6 @@ func TestInsertarUltimo(t *testing.T) {
 	iter.Siguiente()                    // El iter vuelve a apuntar a nil.
 	iter.Insertar("Siguiente a Cuarto") // "Cuarto" y el iter apuntan a "Siguiente a Cuarto", y éste, a nil.
 	require.Equal(t, lista.VerUltimo(), "Siguiente a Cuarto")
-}
-
-// Test para verificar la inserción en medio de la lista usando el iterador
-func TestInsertarEnElMedio(t *testing.T) {
-	lista := TDALista.CrearListaEnlazada[string]()
-	arr := []string{"Primero", "Cuarto"}
-
-	for _, str := range arr {
-		lista.InsertarUltimo(str)
-	}
-
-	iter := lista.Iterador() // El iter apunta a "Primero".
-
-	iter.Siguiente()         // El iter apunta a "Cuarto".
-	iter.Insertar("Segundo") // "Primero" y el iter apuntan a "Segundo", y éste, a "Cuarto".
-	require.Equal(t, iter.VerActual(), "Segundo")
-
-	iter.Siguiente()         // El iter vuelve a apuntar a "Cuarto".
-	iter.Insertar("Tercero") // "Segundo" y el iter apuntan a "Tercero", y éste, a "Cuarto".
-	require.Equal(t, iter.VerActual(), "Tercero")
 }
 
 // Test para borrar el primer elemento usando el iterador externo
