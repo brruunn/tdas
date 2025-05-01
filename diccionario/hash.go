@@ -127,7 +127,29 @@ func (hash *hashAbierto[K, V]) Obtener(clave K) V {
 }
 
 func (hash *hashAbierto[K, V]) Borrar(clave K) V {
-	// ...
+	pos := convertirAPosicion(clave, hash.tam)
+	lista := hash.tabla[pos]
+
+	if lista == nil || lista.EstaVacia() {
+		panic(_MENSAJE_PANIC_DICCIONARIO)
+	}
+
+	iter := lista.Iterador()
+	for iter.HaySiguiente() {
+		par := iter.VerActual()
+		if par.clave == clave {
+			dato := par.dato
+			iter.Borrar()
+			hash.cantidad--
+			if float32(hash.cantidad)/float32(hash.tam) <= _MIN_FACTOR_DE_CARGA && hash.tam > _TAM_INICIAL {
+				hash.rehashear(hash.tam / _FACTOR_REDIMENSION)
+			}
+			return dato
+		}
+		iter.Siguiente()
+	}
+
+	panic(_MENSAJE_PANIC_DICCIONARIO)
 }
 
 func (hash *hashAbierto[K, V]) Cantidad() int {
@@ -148,7 +170,18 @@ func (hash *hashAbierto[K, V]) Iterar(visitar func(clave K, dato V) bool) {
 }
 
 func (hash *hashAbierto[K, V]) Iterador() IterDiccionario[K, V] {
-	// ...
+	iter := iterDiccionario[K, V]{hash: hash, posActual: 0}
+
+	for iter.posActual < hash.tam {
+		lista := hash.tabla[iter.posActual]
+		if lista != nil && !lista.EstaVacia() {
+			iter.actual = lista.Iterador()
+			return &iter
+		}
+		iter.posActual++
+	}
+
+	return &iter
 }
 
 // -------------------------------------------------------------------------
@@ -168,5 +201,22 @@ func (iter *iterDiccionario[K, V]) VerActual() (K, V) {
 }
 
 func (iter *iterDiccionario[K, V]) Siguiente() {
-	// ...
+	if !iter.HaySiguiente() {
+		panic(_MENSAJE_PANIC_ITER)
+	}
+
+	iter.actual.Siguiente()
+	if iter.actual.HaySiguiente() {
+		return
+	}
+
+	iter.posActual++
+	for iter.posActual < iter.hash.tam {
+		lista := iter.hash.tabla[iter.posActual]
+		if lista != nil && !lista.EstaVacia() {
+			iter.actual = lista.Iterador()
+			return
+		}
+		iter.posActual++
+	}
 }
