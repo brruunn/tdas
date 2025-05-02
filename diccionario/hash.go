@@ -74,13 +74,18 @@ func (hash *hashAbierto[K, V]) Guardar(clave K, dato V) {
 	lista := hash.tabla[pos]
 
 	if hash.Pertenece(clave) {
+		var parACambiar *parClaveValor[K, V]
+		var dato V
+
 		lista.Iterar(func(par parClaveValor[K, V]) bool {
 			if par.clave == clave {
-				par.dato = dato
+				parACambiar, dato = &par, par.dato
 				return false
 			}
 			return true
 		})
+
+		parACambiar.dato = dato
 
 	} else {
 		par := crearPar(clave, dato)
