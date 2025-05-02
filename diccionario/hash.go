@@ -189,7 +189,7 @@ func (hash *hashAbierto[K, V]) Iterador() IterDiccionario[K, V] {
 // -------------------------------------------------------------------------
 
 func (iter *iterDiccionario[K, V]) HaySiguiente() bool {
-	return iter.posActual == iter.hash.tam
+	return iter.posActual != iter.hash.tam
 }
 
 func (iter *iterDiccionario[K, V]) VerActual() (K, V) {
