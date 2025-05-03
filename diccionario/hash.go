@@ -25,15 +25,14 @@ type iterDiccionario[K comparable, V any] struct {
 const (
 	_MENSAJE_PANIC_DICCIONARIO = "La clave no pertenece al diccionario"
 	_MENSAJE_PANIC_ITER        = "El iterador termino de iterar"
-	_TAM_INICIAL               = 7   // Debe ser un número primo
-	_MAX_FACTOR_DE_CARGA       = 2.5 // Debe estar entre 2 y 3
-	_MIN_FACTOR_DE_CARGA       = 1.0
+	_TAM_INICIAL               = 7 // Debe ser un número primo
+	_MAX_FACTOR_DE_CARGA       = 3.0
+	_MIN_FACTOR_DE_CARGA       = 2.0
 	_FACTOR_REDIMENSION        = 2
 )
 
 func CrearHash[K comparable, V any]() Diccionario[K, V] {
 	tabla := make([]TDALista.Lista[parClaveValor[K, V]], _TAM_INICIAL)
-	// Se inicializan listas vacias, antes eran todas nil y por ende, producia un panic
 	for i := range tabla {
 		tabla[i] = TDALista.CrearListaEnlazada[parClaveValor[K, V]]()
 	}
@@ -45,7 +44,16 @@ func crearPar[K comparable, V any](clave K, dato V) parClaveValor[K, V] {
 }
 
 func convertirABytes[K comparable](clave K) []byte {
-	return []byte(fmt.Sprintf("%v", clave))
+	return fmt.Appendf(nil, "%v", clave)
+}
+
+func hashingFNV(clave []byte, tam int) int {
+	var h uint64 = 14695981039346656037
+	for _, c := range clave {
+		h *= 1099511628211
+		h ^= uint64(c)
+	}
+	return int(h % uint64(tam))
 }
 
 func convertirAPosicion[K comparable](clave K, tam int) int {
@@ -55,7 +63,7 @@ func convertirAPosicion[K comparable](clave K, tam int) int {
 
 func (hash *hashAbierto[K, V]) rehashear(nuevo_tam int) {
 	nuevaTabla := make([]TDALista.Lista[parClaveValor[K, V]], nuevo_tam)
-	// Lo mismo, antes eran punteros a nil. Ahora están vacías al rehashear
+
 	for i := range nuevaTabla {
 		nuevaTabla[i] = TDALista.CrearListaEnlazada[parClaveValor[K, V]]()
 	}
@@ -80,49 +88,44 @@ func (hash *hashAbierto[K, V]) Guardar(clave K, dato V) {
 	lista := hash.tabla[pos]
 
 	if hash.Pertenece(clave) {
-		_ = hash.Borrar(clave)
-		par := crearPar(clave, dato) // Simplifiqué lógica y código: Antes se iteraba hasta  par.clave == clave y con la direccion de memoria &par se cambiaba el dato
-		lista.InsertarUltimo(par)    // Ahora: Usa el mismo hash.Borrar(clave) para eliminar y luego inserto de una, en vez de usar punteros.
-		hash.cantidad++
+		hash.Borrar(clave)
+	}
 
-	} else {
-		par := crearPar(clave, dato)
-		lista.InsertarUltimo(par)
-		hash.cantidad++
+	par := crearPar(clave, dato)
+	lista.InsertarUltimo(par)
+	hash.cantidad++
 
-		if float32(hash.cantidad)/float32(hash.tam) >= _MAX_FACTOR_DE_CARGA {
-			hash.rehashear(hash.tam * _FACTOR_REDIMENSION)
-		}
+	if float32(hash.cantidad)/float32(hash.tam) >= _MAX_FACTOR_DE_CARGA {
+		hash.rehashear(hash.tam * _FACTOR_REDIMENSION)
 	}
 }
 
 func (hash *hashAbierto[K, V]) Pertenece(clave K) bool {
-	var (
-		pos       = convertirAPosicion(clave, hash.tam)
-		lista     = hash.tabla[pos]
-		pertenece = false
-	)
+	pos := convertirAPosicion(clave, hash.tam)
+	lista := hash.tabla[pos]
 
-	lista.Iterar(func(par parClaveValor[K, V]) bool {
+	iter := lista.Iterador()
+	for iter.HaySiguiente() {
+		par := iter.VerActual()
 		if par.clave == clave {
-			pertenece = true
-			return false
+			return true
 		}
-		return true
-	})
-
-	return pertenece
+		iter.Siguiente()
+	}
+	return false
 }
 
 func (hash *hashAbierto[K, V]) Obtener(clave K) V {
 	pos := convertirAPosicion(clave, hash.tam)
 	lista := hash.tabla[pos]
 
-	for iter := lista.Iterador(); iter.HaySiguiente(); iter.Siguiente() {
+	iter := lista.Iterador()
+	for iter.HaySiguiente() {
 		par := iter.VerActual()
 		if par.clave == clave {
 			return par.dato
 		}
+		iter.Siguiente()
 	}
 	panic(_MENSAJE_PANIC_DICCIONARIO)
 }
@@ -130,10 +133,6 @@ func (hash *hashAbierto[K, V]) Obtener(clave K) V {
 func (hash *hashAbierto[K, V]) Borrar(clave K) V {
 	pos := convertirAPosicion(clave, hash.tam)
 	lista := hash.tabla[pos]
-
-	if lista == nil || lista.EstaVacia() {
-		panic(_MENSAJE_PANIC_DICCIONARIO)
-	}
 
 	iter := lista.Iterador()
 	for iter.HaySiguiente() {
@@ -173,9 +172,9 @@ func (hash *hashAbierto[K, V]) Iterar(visitar func(clave K, dato V) bool) {
 func (hash *hashAbierto[K, V]) Iterador() IterDiccionario[K, V] {
 	iter := iterDiccionario[K, V]{hash: hash, posActual: 0}
 
-	for iter.posActual < hash.tam {
+	for iter.HaySiguiente() {
 		lista := hash.tabla[iter.posActual]
-		if lista != nil && !lista.EstaVacia() {
+		if !lista.EstaVacia() {
 			iter.actual = lista.Iterador()
 			return &iter
 		}
@@ -212,9 +211,9 @@ func (iter *iterDiccionario[K, V]) Siguiente() {
 	}
 
 	iter.posActual++
-	for iter.posActual < iter.hash.tam {
+	for iter.HaySiguiente() {
 		lista := iter.hash.tabla[iter.posActual]
-		if lista != nil && !lista.EstaVacia() {
+		if !lista.EstaVacia() {
 			iter.actual = lista.Iterador()
 			return
 		}

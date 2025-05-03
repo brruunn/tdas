@@ -135,21 +135,21 @@ func (iter *iterListaEnlazada[T]) Siguiente() {
 }
 
 func (iter *iterListaEnlazada[T]) Insertar(elemento T) {
+	nuevoNodo := nodoCrear(elemento)
+	nuevoNodo.siguiente = iter.actual
+
 	if iter.actual == iter.lista.primero {
-		iter.lista.InsertarPrimero(elemento)
-		iter.actual = iter.lista.primero
+		iter.lista.primero = nuevoNodo
 	} else {
-		nuevoNodo := nodoCrear(elemento)
-		nuevoNodo.siguiente = iter.actual
-
-		iter.anterior.siguiente, iter.actual = nuevoNodo, nuevoNodo
-
-		if iter.anterior == iter.lista.ultimo {
-			iter.lista.ultimo = nuevoNodo
-		}
-
-		iter.lista.largo++
+		iter.anterior.siguiente = nuevoNodo
 	}
+
+	if iter.anterior == iter.lista.ultimo {
+		iter.lista.ultimo = nuevoNodo
+	}
+
+	iter.actual = nuevoNodo
+	iter.lista.largo++
 }
 
 func (iter *iterListaEnlazada[T]) Borrar() T {

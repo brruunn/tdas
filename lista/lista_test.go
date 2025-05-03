@@ -28,23 +28,39 @@ func TestListaEstaVacia(t *testing.T) {
 }
 
 // Test para verificar la inserción y verificación del primer elemento
-func TestInsertarYVerPrimero(t *testing.T) {
+func TestInsertarPrimeroYVer(t *testing.T) {
 	lista := TDALista.CrearListaEnlazada[int]()
+
 	lista.InsertarPrimero(10)
 	require.Equal(t, 10, lista.VerPrimero())
 
 	lista.InsertarPrimero(20)
 	require.Equal(t, 20, lista.VerPrimero())
+	require.Equal(t, 10, lista.VerUltimo())
 }
 
 // Test para verificar la inserción y verificación del último elemento
-func TestInsertaryVerUltimo(t *testing.T) {
+func TestInsertarUltimoYVer(t *testing.T) {
 	lista := TDALista.CrearListaEnlazada[int]()
+
 	lista.InsertarUltimo(10)
 	require.Equal(t, 10, lista.VerUltimo())
 
 	lista.InsertarUltimo(20)
 	require.Equal(t, 20, lista.VerUltimo())
+	require.Equal(t, 10, lista.VerPrimero())
+}
+
+func TestInsertarPrimeroUltimoYVer(t *testing.T) {
+	lista := TDALista.CrearListaEnlazada[int]()
+
+	for n := range 5 {
+		lista.InsertarPrimero(5 - n) // De la mitad para abajo
+		lista.InsertarUltimo(6 + n)  // De la mitad para arriba
+	}
+
+	require.Equal(t, 1, lista.VerPrimero())
+	require.Equal(t, 10, lista.VerUltimo())
 }
 
 // Test para verificar el borrado del primer elemento
