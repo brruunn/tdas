@@ -33,6 +33,10 @@ const (
 
 func CrearHash[K comparable, V any]() Diccionario[K, V] {
 	tabla := make([]TDALista.Lista[parClaveValor[K, V]], _TAM_INICIAL)
+	// Se inicializan listas vacias, antes eran todas nil y por ende, producia un panic
+	for i := range tabla {
+		tabla[i] = TDALista.CrearListaEnlazada[parClaveValor[K, V]]()
+	}
 	return &hashAbierto[K, V]{tabla: tabla, tam: _TAM_INICIAL}
 }
 
@@ -51,13 +55,15 @@ func convertirAPosicion[K comparable](clave K, tam int) int {
 
 func (hash *hashAbierto[K, V]) rehashear(nuevo_tam int) {
 	nuevaTabla := make([]TDALista.Lista[parClaveValor[K, V]], nuevo_tam)
+	// Lo mismo, antes eran punteros a nil. Ahora están vacías al rehashear
+	for i := range nuevaTabla {
+		nuevaTabla[i] = TDALista.CrearListaEnlazada[parClaveValor[K, V]]()
+	}
 
 	for iter := hash.Iterador(); iter.HaySiguiente(); iter.Siguiente() {
-		var (
-			clave, dato = iter.VerActual()
-			pos         = convertirAPosicion(clave, nuevo_tam)
-			par         = crearPar(clave, dato)
-		)
+		clave, dato := iter.VerActual()
+		pos := convertirAPosicion(clave, nuevo_tam)
+		par := crearPar(clave, dato)
 		nuevaTabla[pos].InsertarUltimo(par)
 	}
 
@@ -74,28 +80,18 @@ func (hash *hashAbierto[K, V]) Guardar(clave K, dato V) {
 	lista := hash.tabla[pos]
 
 	if hash.Pertenece(clave) {
-		var parACambiar *parClaveValor[K, V]
-		var dato V
-
-		lista.Iterar(func(par parClaveValor[K, V]) bool {
-			if par.clave == clave {
-				parACambiar, dato = &par, par.dato
-				return false
-			}
-			return true
-		})
-
-		parACambiar.dato = dato
+		_ = hash.Borrar(clave)
+		par := crearPar(clave, dato) // Simplifiqué lógica y código: Antes se iteraba hasta  par.clave == clave y con la direccion de memoria &par se cambiaba el dato
+		lista.InsertarUltimo(par)    // Ahora: Usa el mismo hash.Borrar(clave) para eliminar y luego inserto de una, en vez de usar punteros.
+		hash.cantidad++
 
 	} else {
 		par := crearPar(clave, dato)
-
 		lista.InsertarUltimo(par)
 		hash.cantidad++
 
 		if float32(hash.cantidad)/float32(hash.tam) >= _MAX_FACTOR_DE_CARGA {
 			hash.rehashear(hash.tam * _FACTOR_REDIMENSION)
-
 		}
 	}
 }
