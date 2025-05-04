@@ -101,18 +101,14 @@ func (hash *hashAbierto[K, V]) Guardar(clave K, dato V) {
 }
 
 func (hash *hashAbierto[K, V]) Pertenece(clave K) bool {
-	pos := convertirAPosicion(clave, hash.tam)
-	lista := hash.tabla[pos]
-
-	iter := lista.Iterador()
-	for iter.HaySiguiente() {
-		par := iter.VerActual()
-		if par.clave == clave {
-			return true
+	pertenece := true
+	defer func() {
+		if r := recover(); r != nil {
+			pertenece = false
 		}
-		iter.Siguiente()
-	}
-	return false
+	}()
+	hash.Obtener(clave)
+	return pertenece
 }
 
 func (hash *hashAbierto[K, V]) Obtener(clave K) V {
