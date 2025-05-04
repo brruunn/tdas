@@ -174,13 +174,12 @@ func (hash *hashAbierto[K, V]) Iterar(visitar func(clave K, dato V) bool) {
 }
 
 func (hash *hashAbierto[K, V]) Iterador() IterDiccionario[K, V] {
-	iter := iterDiccionario[K, V]{hash: hash, posActual: 0}
+	iter := iterDiccionario[K, V]{hash: hash}
 
-	for iter.HaySiguiente() {
-		lista := hash.tabla[iter.posActual]
+	for _, lista := range hash.tabla {
 		if !lista.EstaVacia() {
 			iter.actual = lista.Iterador()
-			return &iter
+			break
 		}
 		iter.posActual++
 	}
