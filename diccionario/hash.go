@@ -63,16 +63,18 @@ func convertirAPosicion[K comparable](clave K, tam int) int {
 
 func (hash *hashAbierto[K, V]) rehashear(nuevo_tam int) {
 	nuevaTabla := make([]TDALista.Lista[parClaveValor[K, V]], nuevo_tam)
-
 	for i := range nuevaTabla {
 		nuevaTabla[i] = TDALista.CrearListaEnlazada[parClaveValor[K, V]]()
 	}
 
-	for iter := hash.Iterador(); iter.HaySiguiente(); iter.Siguiente() {
-		clave, dato := iter.VerActual()
-		pos := convertirAPosicion(clave, nuevo_tam)
-		par := crearPar(clave, dato)
-		nuevaTabla[pos].InsertarUltimo(par)
+	for _, lista := range hash.tabla {
+		iter := lista.Iterador()
+		for iter.HaySiguiente() {
+			par := iter.VerActual()
+			pos := convertirAPosicion(par.clave, nuevo_tam)
+			nuevaTabla[pos].InsertarUltimo(par)
+			iter.Siguiente()
+		}
 	}
 
 	hash.tabla = nuevaTabla
@@ -87,12 +89,18 @@ func (hash *hashAbierto[K, V]) Guardar(clave K, dato V) {
 	pos := convertirAPosicion(clave, hash.tam)
 	lista := hash.tabla[pos]
 
-	if hash.Pertenece(clave) {
-		hash.Borrar(clave)
+	iter := lista.Iterador()
+	for iter.HaySiguiente() {
+		par := iter.VerActual()
+		if par.clave == clave {
+			iter.Borrar()
+			hash.cantidad--
+			break
+		}
+		iter.Siguiente()
 	}
 
-	par := crearPar(clave, dato)
-	lista.InsertarUltimo(par)
+	lista.InsertarUltimo(crearPar(clave, dato))
 	hash.cantidad++
 
 	if float32(hash.cantidad)/float32(hash.tam) >= _MAX_FACTOR_DE_CARGA {
