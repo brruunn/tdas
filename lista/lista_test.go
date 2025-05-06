@@ -192,6 +192,24 @@ func TestSumarPrimerosCincoPares(t *testing.T) {
 // -------------------- TESTS DEL ITERADOR EXTERNO --------------------
 // --------------------------------------------------------------------
 
+func TestIteradorExternoItera(t *testing.T) {
+	arr := []int{5, 10, 15, 20, 25}
+	lista := TDALista.CrearListaEnlazada[int]()
+	for _, v := range arr {
+		lista.InsertarUltimo(v)
+	}
+
+	iter := lista.Iterador()
+	var resultado []int
+	for iter.HaySiguiente() {
+		resultado = append(resultado, iter.VerActual())
+		iter.Siguiente()
+	}
+
+	// Comprobar que se recorrió como se esperaba
+	require.Equal(t, arr, resultado)
+}
+
 // Test para verificar el método VerActual del iterador
 func TestVerActual(t *testing.T) {
 	lista := TDALista.CrearListaEnlazada[int]()
@@ -346,4 +364,26 @@ func TestIteradorBorrarUltimo(t *testing.T) {
 	require.Equal(t, 100, lista.VerPrimero()) // El primero sigue siendo 100
 	require.Equal(t, 100, lista.VerUltimo())  // Ahora 100 tambien es el ultimo
 	require.Equal(t, 1, lista.Largo())
+}
+
+func TestIteradorInsertarIntercalado(t *testing.T) {
+	lista := TDALista.CrearListaEnlazada[int]()
+	iter := lista.Iterador()
+
+	iter.Insertar(1) // [1]
+	iter.Siguiente() // apuntamos a nil
+	iter.Insertar(2) // [1,2]
+
+	iter = lista.Iterador()
+	iter.Insertar(0) // [0,1,2]
+
+	for iter.HaySiguiente() {
+		iter.Siguiente()
+	}
+
+	iter.Insertar(3) // [0,1,2,3]
+
+	require.Equal(t, 0, lista.VerPrimero())
+	require.Equal(t, 3, lista.VerUltimo())
+	require.Equal(t, 4, lista.Largo())
 }
