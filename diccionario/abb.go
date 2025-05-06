@@ -20,7 +20,7 @@ type abb[K comparable, V any] struct {
 }
 
 type iterDiccoonario[K comparable, V any] struct {
-	pila  TDAPila.Pila[*nodoAbb[K, V]]
+	pila  TDAPila.Pila[*nodoABB[K, V]]
 	desde *K
 	hasta *K
 	cmp   funcCmp[K]
