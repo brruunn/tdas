@@ -30,7 +30,7 @@ func CrearABB[K comparable, V any](cmp funcCmp[K]) DiccionarioOrdenado[K, V] {
 	return &abb[K, V]{cmp: cmp}
 }
 
-func nodoABBCrear[K comparable, V any](clave K, dato V) *nodoABB[K, V] {
+func crearNodoABB[K comparable, V any](clave K, dato V) *nodoABB[K, V] {
 	return &nodoABB[K, V]{clave: clave, dato: dato}
 }
 
