@@ -19,7 +19,7 @@ type abb[K comparable, V any] struct {
 	cmp      funcCmp[K]
 }
 
-type iterDiccionarioOrdenado[K comparable, V any] struct {
+type iterABB[K comparable, V any] struct {
 	pila  TDAPila.Pila[*nodoABB[K, V]]
 	desde *K
 	hasta *K
@@ -27,9 +27,11 @@ type iterDiccionarioOrdenado[K comparable, V any] struct {
 }
 
 func CrearABB[K comparable, V any](cmp funcCmp[K]) DiccionarioOrdenado[K, V] {
-	return &abb[K, V]{
-		cmp: cmp,
-	}
+	return &abb[K, V]{cmp: cmp}
+}
+
+func nodoABBCrear[K comparable, V any](clave K, dato V) *nodoABB[K, V] {
+	return &nodoABB[K, V]{clave: clave, dato: dato}
 }
 
 func (n *nodoABB[K, V]) iterar(visitar func(K, V) bool) bool {
@@ -57,8 +59,7 @@ func (a *abb[K, V]) Obtener(clave K) V {
 			nodo = nodo.der
 		}
 	}
-	var cero V
-	return cero
+	panic(_MENSAJE_PANIC_DICCIONARIO)
 }
 
 func (a *abb[K, V]) Pertenece(clave K) bool {
@@ -91,12 +92,11 @@ func (a *abb[K, V]) Borrar(clave K) V {
 			nodo = nodo.der
 		}
 	}
-	var cero V
-	return cero
+	panic(_MENSAJE_PANIC_DICCIONARIO)
 }
 
 func (a *abb[K, V]) Cantidad() int {
-	// ...
+	return a.cantidad
 }
 
 func (a *abb[K, V]) Iterar(visitar func(K, V) bool) {
@@ -119,13 +119,21 @@ func (a *abb[K, V]) Iterador() IterDiccionario[K, V] {
 		nodo = nodo.izq
 	}
 
-	return &iterDiccionarioOrdenado[K, V]{
-		pila: pila,
-		cmp:  a.cmp,
-	}
-
+	return &iterABB[K, V]{pila: pila, cmp: a.cmp}
 }
 
 func (a *abb[K, V]) IteradorRango(desde *K, hasta *K) IterDiccionario[K, V] {
+	// ...
+}
+
+func (iter *iterABB[K, V]) HaySiguiente() bool {
+	// ...
+}
+
+func (iter *iterABB[K, V]) VerActual() (K, V) {
+	// ...
+}
+
+func (iter *iterABB[K, V]) Siguiente() {
 	// ...
 }
