@@ -16,7 +16,7 @@ type hashAbierto[K comparable, V any] struct {
 	cantidad int
 }
 
-type iterDiccionario[K comparable, V any] struct {
+type iterHashAbierto[K comparable, V any] struct {
 	hash      *hashAbierto[K, V]
 	posActual int
 	actual    TDALista.IteradorLista[parClaveValor[K, V]]
@@ -162,19 +162,24 @@ func (hash *hashAbierto[K, V]) Cantidad() int {
 
 func (hash *hashAbierto[K, V]) Iterar(visitar func(clave K, dato V) bool) {
 	for _, lista := range hash.tabla {
-		iter := lista.Iterador()
-		for iter.HaySiguiente() {
-			par := iter.VerActual()
+		iteraProxLista := true
+
+		lista.Iterar(func(par parClaveValor[K, V]) bool {
 			if !visitar(par.clave, par.dato) {
-				return
+				iteraProxLista = false
+				return false
 			}
-			iter.Siguiente()
+			return true
+		})
+
+		if !iteraProxLista {
+			return
 		}
 	}
 }
 
 func (hash *hashAbierto[K, V]) Iterador() IterDiccionario[K, V] {
-	iter := iterDiccionario[K, V]{hash: hash}
+	iter := iterHashAbierto[K, V]{hash: hash}
 
 	for _, lista := range hash.tabla {
 		if !lista.EstaVacia() {
@@ -191,11 +196,11 @@ func (hash *hashAbierto[K, V]) Iterador() IterDiccionario[K, V] {
 // -------------------- PRIMITIVAS DEL ITERADOR EXTERNO --------------------
 // -------------------------------------------------------------------------
 
-func (iter *iterDiccionario[K, V]) HaySiguiente() bool {
+func (iter *iterHashAbierto[K, V]) HaySiguiente() bool {
 	return iter.posActual != iter.hash.tam
 }
 
-func (iter *iterDiccionario[K, V]) VerActual() (K, V) {
+func (iter *iterHashAbierto[K, V]) VerActual() (K, V) {
 	if !iter.HaySiguiente() {
 		panic(_MENSAJE_PANIC_ITER)
 	}
@@ -203,7 +208,7 @@ func (iter *iterDiccionario[K, V]) VerActual() (K, V) {
 	return par.clave, par.dato
 }
 
-func (iter *iterDiccionario[K, V]) Siguiente() {
+func (iter *iterHashAbierto[K, V]) Siguiente() {
 	if !iter.HaySiguiente() {
 		panic(_MENSAJE_PANIC_ITER)
 	}
