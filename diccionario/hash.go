@@ -92,11 +92,7 @@ func (iter *iterHashAbierto[K, V]) buscarLista() {
 	}
 }
 
-// --------------------------------------------------------------------------------------
-// -------------------- PRIMITIVAS DEL DICCIONARIO POR TABLA DE HASH --------------------
-// --------------------------------------------------------------------------------------
-
-func (hash *hashAbierto[K, V]) Guardar(clave K, dato V) {
+func (hash *hashAbierto[K, V]) buscar(clave K, seBorraPar bool) (bool, V) {
 	pos := convertirAPosicion(clave, hash.tam)
 	lista := hash.tabla[pos]
 
@@ -104,14 +100,27 @@ func (hash *hashAbierto[K, V]) Guardar(clave K, dato V) {
 	for iter.HaySiguiente() {
 		par := iter.VerActual()
 		if par.clave == clave {
-			iter.Borrar()
-			hash.cantidad--
-			break
+			if seBorraPar {
+				iter.Borrar()
+				hash.cantidad--
+			}
+			return true, par.dato
 		}
 		iter.Siguiente()
 	}
 
-	lista.InsertarUltimo(crearPar(clave, dato))
+	var ningunDato V
+	return false, ningunDato
+}
+
+// --------------------------------------------------------------------------------------
+// -------------------- PRIMITIVAS DEL DICCIONARIO POR TABLA DE HASH --------------------
+// --------------------------------------------------------------------------------------
+
+func (hash *hashAbierto[K, V]) Guardar(clave K, dato V) {
+	_, _ = hash.buscar(clave, true)
+	pos := convertirAPosicion(clave, hash.tam)
+	hash.tabla[pos].InsertarUltimo(crearPar(clave, dato))
 	hash.cantidad++
 
 	if float32(hash.cantidad)/float32(hash.tam) >= _MAX_FACTOR_DE_CARGA {
@@ -120,50 +129,26 @@ func (hash *hashAbierto[K, V]) Guardar(clave K, dato V) {
 }
 
 func (hash *hashAbierto[K, V]) Pertenece(clave K) bool {
-	pertenece := true
-	defer func() {
-		if r := recover(); r != nil {
-			pertenece = false
-		}
-	}()
-	hash.Obtener(clave)
-	return pertenece
+	encontrado, _ := hash.buscar(clave, false)
+	return encontrado
 }
 
 func (hash *hashAbierto[K, V]) Obtener(clave K) V {
-	pos := convertirAPosicion(clave, hash.tam)
-	lista := hash.tabla[pos]
-
-	iter := lista.Iterador()
-	for iter.HaySiguiente() {
-		par := iter.VerActual()
-		if par.clave == clave {
-			return par.dato
-		}
-		iter.Siguiente()
+	encontrado, dato := hash.buscar(clave, false)
+	if encontrado {
+		return dato
 	}
 	panic(_MENSAJE_PANIC_DICCIONARIO)
 }
 
 func (hash *hashAbierto[K, V]) Borrar(clave K) V {
-	pos := convertirAPosicion(clave, hash.tam)
-	lista := hash.tabla[pos]
-
-	iter := lista.Iterador()
-	for iter.HaySiguiente() {
-		par := iter.VerActual()
-		if par.clave == clave {
-			dato := par.dato
-			iter.Borrar()
-			hash.cantidad--
-			if float32(hash.cantidad)/float32(hash.tam) <= _MIN_FACTOR_DE_CARGA && hash.tam > _TAM_INICIAL {
-				hash.rehashear(hash.tam / _FACTOR_REDIMENSION)
-			}
-			return dato
+	encontrado, dato := hash.buscar(clave, true)
+	if encontrado {
+		if float32(hash.cantidad)/float32(hash.tam) <= _MIN_FACTOR_DE_CARGA && hash.tam > _TAM_INICIAL {
+			hash.rehashear(hash.tam / _FACTOR_REDIMENSION)
 		}
-		iter.Siguiente()
+		return dato
 	}
-
 	panic(_MENSAJE_PANIC_DICCIONARIO)
 }
 
