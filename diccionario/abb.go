@@ -154,7 +154,7 @@ func (a *abb[K, V]) Borrar(clave K) V {
 		}
 	}
 
-	panic("La clave no pertenece al diccionario")
+	panic(_MENSAJE_PANIC_DICCIONARIO)
 }
 
 func (a *abb[K, V]) Cantidad() int {
@@ -185,7 +185,21 @@ func (a *abb[K, V]) Iterador() IterDiccionario[K, V] {
 }
 
 func (a *abb[K, V]) IteradorRango(desde *K, hasta *K) IterDiccionario[K, V] {
-	// ...
+	pila := TDAPila.CrearPilaDinamica[*nodoABB[K, V]]()
+	nodo := a.raiz
+
+	for nodo != nil {
+		if a.cmp(nodo.clave, *desde) < 0 {
+			nodo = nodo.der
+		} else if a.cmp(nodo.clave, *hasta) > 0 {
+			nodo = nodo.izq
+		} else {
+			pila.Apilar(nodo)
+			nodo = nodo.izq
+		}
+	}
+
+	return &iterABB[K, V]{pila: pila, cmp: a.cmp, desde: desde, hasta: hasta}
 }
 
 func (iter *iterABB[K, V]) HaySiguiente() bool {
