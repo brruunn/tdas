@@ -51,6 +51,7 @@ func TestInsertarYVerUltimo(t *testing.T) {
 	require.Equal(t, 10, lista.VerPrimero()) // El ahora último, desplazó al antes último
 }
 
+// Test para verificar la inserción y verificación del primer y último elemento, intercalados
 func TestInsertarIntercalado(t *testing.T) {
 	lista := TDALista.CrearListaEnlazada[int]()
 
@@ -192,6 +193,7 @@ func TestSumarPrimerosCincoPares(t *testing.T) {
 // -------------------- TESTS DEL ITERADOR EXTERNO --------------------
 // --------------------------------------------------------------------
 
+// Test para verificar que, el iterador externo, itera los elementos en el orden esperado
 func TestIteradorExternoItera(t *testing.T) {
 	arr := []int{5, 10, 15, 20, 25}
 	lista := TDALista.CrearListaEnlazada[int]()
@@ -366,6 +368,7 @@ func TestIteradorBorrarUltimo(t *testing.T) {
 	require.Equal(t, 1, lista.Largo())
 }
 
+// Test para verificar la inserción intercalada, al principio y al final, con dos iteradores
 func TestIteradorInsertarIntercalado(t *testing.T) {
 	lista := TDALista.CrearListaEnlazada[int]()
 	iter := lista.Iterador()
