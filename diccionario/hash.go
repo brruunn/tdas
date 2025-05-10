@@ -81,6 +81,17 @@ func (hash *hashAbierto[K, V]) rehashear(nuevo_tam int) {
 	hash.tam = nuevo_tam
 }
 
+func (iter *iterHashAbierto[K, V]) buscarLista() {
+	for iter.HaySiguiente() {
+		lista := iter.hash.tabla[iter.posActual]
+		if !lista.EstaVacia() {
+			iter.actual = lista.Iterador()
+			return
+		}
+		iter.posActual++
+	}
+}
+
 // --------------------------------------------------------------------------------------
 // -------------------- PRIMITIVAS DEL DICCIONARIO POR TABLA DE HASH --------------------
 // --------------------------------------------------------------------------------------
@@ -180,15 +191,7 @@ func (hash *hashAbierto[K, V]) Iterar(visitar func(clave K, dato V) bool) {
 
 func (hash *hashAbierto[K, V]) Iterador() IterDiccionario[K, V] {
 	iter := iterHashAbierto[K, V]{hash: hash}
-
-	for _, lista := range hash.tabla {
-		if !lista.EstaVacia() {
-			iter.actual = lista.Iterador()
-			break
-		}
-		iter.posActual++
-	}
-
+	iter.buscarLista()
 	return &iter
 }
 
@@ -219,12 +222,5 @@ func (iter *iterHashAbierto[K, V]) Siguiente() {
 	}
 
 	iter.posActual++
-	for iter.HaySiguiente() {
-		lista := iter.hash.tabla[iter.posActual]
-		if !lista.EstaVacia() {
-			iter.actual = lista.Iterador()
-			return
-		}
-		iter.posActual++
-	}
+	iter.buscarLista()
 }
