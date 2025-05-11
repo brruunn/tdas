@@ -262,6 +262,42 @@ func TestIteradorInternoCorteTemprano(t *testing.T) {
 	require.LessOrEqual(t, suma, 3)
 }
 
+func TestIteradorInternoSumarTodos(t *testing.T) {
+	cmp := func(a, b int) int { return a - b }
+	dic := TDADiccionario.CrearABB[int, int](cmp)
+	valores := []int{5, 3, 7, 2, 4, 6, 8}
+
+	for _, v := range valores {
+		dic.Guardar(v, v)
+	}
+
+	suma := 0
+	dic.Iterar(func(clave int, valor int) bool {
+		suma += valor
+		return true
+	})
+
+	require.Equal(t, 35, suma) // 5+3+7+2+4+6+8 = 35
+}
+func TestIteradorInternoSumarPares(t *testing.T) {
+	cmp := func(a, b int) int { return a - b }
+	dic := TDADiccionario.CrearABB[int, int](cmp)
+	valores := []int{5, 3, 7, 2, 4, 6, 8}
+
+	for _, v := range valores {
+		dic.Guardar(v, v)
+	}
+
+	suma := 0
+	dic.Iterar(func(clave int, valor int) bool {
+		if valor%2 == 0 {
+			suma += valor
+		}
+		return true
+	})
+
+	require.Equal(t, 20, suma) // 2+4+6+8 = 20
+}
 func TestIteradorInternoConRango(t *testing.T) {
 	dic := TDADiccionario.CrearABB[string, int](strings.Compare)
 	claves := []string{"A", "B", "C", "D", "E"}
@@ -281,6 +317,127 @@ func TestIteradorInternoConRango(t *testing.T) {
 
 	require.Equal(t, []string{"B", "C", "D"}, resultado)
 }
+func TestIteradorInternoRangoInOrder(t *testing.T) {
+	cmp := func(a, b int) int { return a - b }
+	dic := TDADiccionario.CrearABB[int, string](cmp)
+	// Árbol resultante:
+	//       10
+	//     /    \
+	//    5     15
+	//   / \    / \
+	//  3   7 12  17
+	claves := []int{10, 5, 15, 3, 7, 12, 17}
+	valores := []string{"A", "B", "C", "D", "E", "F", "G"}
+
+	for i, k := range claves {
+		dic.Guardar(k, valores[i])
+	}
+
+	desde := 3
+	hasta := 17
+	var resultado []string
+
+	dic.IterarRango(&desde, &hasta, func(clave int, valor string) bool {
+		resultado = append(resultado, valor)
+		return true
+	})
+
+	require.Equal(t, []string{"D", "B", "E", "A", "F", "C", "G"}, resultado)
+}
+func TestIteradorInternoRangoParcial(t *testing.T) {
+	cmp := func(a, b int) int { return a - b }
+	dic := TDADiccionario.CrearABB[int, string](cmp)
+	// Árbol más completo:
+	//           10
+	//         /    \
+	//        5     15
+	//       / \    / \
+	//      3   7 12  17
+	//     / \ / \/ \ / \
+	//    1 4 6 8 11 13 16 18
+	claves := []int{10, 5, 15, 3, 7, 12, 17, 1, 4, 6, 8, 11, 13, 16, 18}
+
+	for _, k := range claves {
+		dic.Guardar(k, fmt.Sprintf("%d", k))
+	}
+
+	desde := 5
+	hasta := 15
+	var resultado []string
+
+	dic.IterarRango(&desde, &hasta, func(clave int, valor string) bool {
+		resultado = append(resultado, valor)
+		return true
+	})
+
+	expected := []string{"5", "6", "7", "8", "10", "11", "12", "13", "15"}
+	require.Equal(t, expected, resultado)
+}
+
+func TestIteradorInternoRangoConCorte(t *testing.T) {
+	cmp := func(a, b int) int { return a - b }
+	dic := TDADiccionario.CrearABB[int, int](cmp)
+	claves := []int{10, 5, 15, 3, 7, 12, 17}
+
+	for _, k := range claves {
+		dic.Guardar(k, k)
+	}
+
+	desde := 5
+	hasta := 15
+	suma := 0
+
+	dic.IterarRango(&desde, &hasta, func(clave int, valor int) bool {
+		suma += valor
+		return suma < 30 // Corta cuando la suma alcanza o supera 30
+	})
+
+	require.Less(t, suma, 30+7) // La suma debe ser menor a 30+último elemento procesado
+}
+
+func TestIteradorInternoRangoVacio(t *testing.T) {
+	cmp := func(a, b int) int { return a - b }
+	dic := TDADiccionario.CrearABB[int, string](cmp)
+	dic.Guardar(5, "A")
+	dic.Guardar(3, "B")
+	dic.Guardar(7, "C")
+
+	// Rango donde no hay elementos
+	desde := 6
+	hasta := 6
+	var resultado []string
+	dic.IterarRango(&desde, &hasta, func(clave int, valor string) bool {
+		resultado = append(resultado, valor)
+		return true
+	})
+	require.Empty(t, resultado)
+
+	// Rango fuera de los límites
+	desde = 8
+	hasta = 10
+	resultado = nil
+	dic.IterarRango(&desde, &hasta, func(clave int, valor string) bool {
+		resultado = append(resultado, valor)
+		return true
+	})
+	require.Empty(t, resultado)
+}
+
+func TestIteradorInternoRangoUnicoElemento(t *testing.T) {
+	cmp := func(a, b int) int { return a - b }
+	dic := TDADiccionario.CrearABB[int, string](cmp)
+	dic.Guardar(5, "A")
+
+	// Rango que incluye exactamente el único elemento
+	desde := 5
+	hasta := 5
+	var resultado []string
+	dic.IterarRango(&desde, &hasta, func(clave int, valor string) bool {
+		resultado = append(resultado, valor)
+		return true
+	})
+	require.Equal(t, []string{"A"}, resultado)
+}
 
 func ejecutarPruebaVolumenOrdenado(b *testing.B, n int) {
 	dic := TDADiccionario.CrearABB[string, int](strings.Compare)
@@ -297,7 +454,7 @@ func ejecutarPruebaVolumenOrdenado(b *testing.B, n int) {
 }
 
 func BenchmarkDiccionarioOrdenado(b *testing.B) {
-	for _, n := range TAMS_VOLUMEN {
+	for _, n := range TAMS_DE_VOLUMEN {
 		b.Run(fmt.Sprintf("%d", n), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				ejecutarPruebaVolumenOrdenado(b, n)

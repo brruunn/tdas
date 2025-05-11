@@ -71,35 +71,45 @@ func (n *nodoABB[K, V]) buscar(clave K, cmp funcCmp[K]) (bool, V) {
 	return n.der.buscar(clave, cmp)
 }
 
-func (n *nodoABB[K, V]) iterar(visitar func(K, V) bool) {
+func (n *nodoABB[K, V]) iterar(visitar func(K, V) bool, cmp funcCmp[K]) bool {
 	if n == nil {
-		return
+		return true
 	}
-	n.izq.iterar(visitar)
+
+	if !n.izq.iterar(visitar, cmp) {
+		return false
+	}
+
 	if !visitar(n.clave, n.dato) {
-		return
+		return false
 	}
-	n.der.iterar(visitar)
+
+	return n.der.iterar(visitar, cmp)
 }
 
-func (n *nodoABB[K, V]) iterarRango(visitar func(K, V) bool, cmp funcCmp[K], desde *K, hasta *K) {
+func (n *nodoABB[K, V]) iterarRango(visitar func(K, V) bool, cmp funcCmp[K], desde *K, hasta *K) bool {
 	if n == nil {
-		return
+		return true
 	}
 
-	enRango := cmp(n.clave, *desde) >= 0 && cmp(n.clave, *hasta) <= 0
-
-	if cmp(n.clave, *hasta) > 0 || enRango {
-		n.izq.iterarRango(visitar, cmp, desde, hasta)
-	}
-	if enRango {
-		if !visitar(n.clave, n.dato) {
-			return
+	if desde == nil || cmp(n.clave, *desde) > 0 {
+		if !n.izq.iterarRango(visitar, cmp, desde, hasta) {
+			return false
 		}
 	}
-	if cmp(n.clave, *desde) < 0 || enRango {
-		n.der.iterarRango(visitar, cmp, desde, hasta)
+
+	if (desde == nil || cmp(n.clave, *desde) >= 0) &&
+		(hasta == nil || cmp(n.clave, *hasta) <= 0) {
+		if !visitar(n.clave, n.dato) {
+			return false
+		}
 	}
+
+	if hasta == nil || cmp(n.clave, *hasta) < 0 {
+		return n.der.iterarRango(visitar, cmp, desde, hasta)
+	}
+
+	return true
 }
 
 //--------------------------------PRIMITIVAS DEL DICCIONARIO ORDENADO--------------------------------------------------//
@@ -223,13 +233,11 @@ func (a *abb[K, V]) Cantidad() int {
 // Iteradores internos
 
 func (a *abb[K, V]) Iterar(visitar func(K, V) bool) {
-	nodo := a.raiz
-	nodo.iterar(visitar)
+	a.raiz.iterar(visitar, a.cmp)
 }
 
 func (a *abb[K, V]) IterarRango(desde *K, hasta *K, visitar func(K, V) bool) {
-	nodo := a.raiz
-	nodo.iterarRango(visitar, a.cmp, desde, hasta)
+	a.raiz.iterarRango(visitar, a.cmp, desde, hasta)
 }
 
 // Iteradores externos
