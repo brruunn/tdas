@@ -43,6 +43,8 @@ func crearPar[K comparable, V any](clave K, dato V) parClaveValor[K, V] {
 	return parClaveValor[K, V]{clave, dato}
 }
 
+// Auxiliares de convertirAPosicion
+
 func convertirABytes[K comparable](clave K) []byte {
 	return fmt.Appendf(nil, "%v", clave)
 }
@@ -56,10 +58,37 @@ func hashingFNV(clave []byte, tam int) int {
 	return int(h % uint64(tam))
 }
 
+// Auxiliar de buscar y Guardar
+
 func convertirAPosicion[K comparable](clave K, tam int) int {
 	claveBytes := convertirABytes(clave)
 	return hashingFNV(claveBytes, tam)
 }
+
+// Auxiliar de Guardar, Pertenece, Obtener y Borrar
+
+func (hash *hashAbierto[K, V]) buscar(clave K, seBorraPar bool) (bool, V) {
+	pos := convertirAPosicion(clave, hash.tam)
+	lista := hash.tabla[pos]
+
+	iter := lista.Iterador()
+	for iter.HaySiguiente() {
+		par := iter.VerActual()
+		if par.clave == clave {
+			if seBorraPar {
+				iter.Borrar()
+				hash.cantidad--
+			}
+			return true, par.dato
+		}
+		iter.Siguiente()
+	}
+
+	var ningunDato V
+	return false, ningunDato
+}
+
+// Auxiliar a Guardar y Borrar
 
 func (hash *hashAbierto[K, V]) rehashear(nuevo_tam int) {
 	nuevaTabla := make([]TDALista.Lista[parClaveValor[K, V]], nuevo_tam)
@@ -81,6 +110,8 @@ func (hash *hashAbierto[K, V]) rehashear(nuevo_tam int) {
 	hash.tam = nuevo_tam
 }
 
+// Auxiliar a Iterador y Siguiente
+
 func (iter *iterHashAbierto[K, V]) buscarLista() {
 	for iter.HaySiguiente() {
 		lista := iter.hash.tabla[iter.posActual]
@@ -90,27 +121,6 @@ func (iter *iterHashAbierto[K, V]) buscarLista() {
 		}
 		iter.posActual++
 	}
-}
-
-func (hash *hashAbierto[K, V]) buscar(clave K, seBorraPar bool) (bool, V) {
-	pos := convertirAPosicion(clave, hash.tam)
-	lista := hash.tabla[pos]
-
-	iter := lista.Iterador()
-	for iter.HaySiguiente() {
-		par := iter.VerActual()
-		if par.clave == clave {
-			if seBorraPar {
-				iter.Borrar()
-				hash.cantidad--
-			}
-			return true, par.dato
-		}
-		iter.Siguiente()
-	}
-
-	var ningunDato V
-	return false, ningunDato
 }
 
 // --------------------------------------------------------------------------------------
