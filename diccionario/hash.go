@@ -88,7 +88,7 @@ func (hash *hashAbierto[K, V]) buscar(clave K, seBorraPar bool) (bool, V) {
 	return false, ningunDato
 }
 
-// Auxiliar a Guardar y Borrar
+// Auxiliar de Guardar y Borrar
 
 func (hash *hashAbierto[K, V]) rehashear(nuevo_tam int) {
 	nuevaTabla := make([]TDALista.Lista[parClaveValor[K, V]], nuevo_tam)
@@ -110,7 +110,7 @@ func (hash *hashAbierto[K, V]) rehashear(nuevo_tam int) {
 	hash.tam = nuevo_tam
 }
 
-// Auxiliar a Iterador y Siguiente
+// Auxiliar de Iterador y Siguiente
 
 func (iter *iterHashAbierto[K, V]) buscarLista() {
 	for iter.HaySiguiente() {

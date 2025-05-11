@@ -33,7 +33,7 @@ func TestDiccionarioClaveDefault(t *testing.T) {
 	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { dicNum.Borrar(0) })
 }
 
-func TestUnElement(t *testing.T) {
+func TestUnElemento(t *testing.T) {
 	t.Log("Comprueba que Diccionario con un elemento tiene esa Clave, unicamente")
 	dic := TDADiccionario.CrearHash[string, int]()
 	dic.Guardar("A", 10)
