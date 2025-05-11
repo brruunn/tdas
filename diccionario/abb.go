@@ -34,36 +34,95 @@ func crearNodoABB[K comparable, V any](clave K, dato V) *nodoABB[K, V] {
 	return &nodoABB[K, V]{clave: clave, dato: dato}
 }
 
-func (n *nodoABB[K, V]) iterar(visitar func(K, V) bool) bool {
-	//...
+func (a *abb[K, V]) guardar(ppNodo **nodoABB[K, V], clave K, dato V) {
+	if *ppNodo == nil {
+		*ppNodo = crearNodoABB(clave, dato)
+		a.cantidad++
+		return
+	}
+
+	comparacion := a.cmp(clave, (*ppNodo).clave)
+	if comparacion == 0 {
+		(*ppNodo).dato = dato
+		return
+	}
+	if comparacion < 0 {
+		a.guardar(&(*ppNodo).izq, clave, dato)
+
+	} else if comparacion > 0 {
+		a.guardar(&(*ppNodo).der, clave, dato)
+
+	}
+}
+
+func (n *nodoABB[K, V]) buscar(clave K, cmp funcCmp[K]) (bool, V) {
+	if n == nil {
+		var ningunDato V
+		return false, ningunDato
+	}
+
+	comparacion := cmp(clave, n.clave)
+	if comparacion == 0 {
+		return true, n.dato
+	}
+	if comparacion < 0 {
+		return n.izq.buscar(clave, cmp)
+	}
+	return n.der.buscar(clave, cmp)
+}
+
+func (n *nodoABB[K, V]) iterar(visitar func(K, V) bool) {
+	if n == nil {
+		return
+	}
+	n.izq.iterar(visitar)
+	if !visitar(n.clave, n.dato) {
+		return
+	}
+	n.der.iterar(visitar)
+}
+
+func (n *nodoABB[K, V]) iterarRango(visitar func(K, V) bool, cmp funcCmp[K], desde *K, hasta *K) {
+	if n == nil {
+		return
+	}
+
+	enRango := cmp(n.clave, *desde) >= 0 && cmp(n.clave, *hasta) <= 0
+
+	if cmp(n.clave, *hasta) > 0 || enRango {
+		n.izq.iterarRango(visitar, cmp, desde, hasta)
+	}
+	if enRango {
+		if !visitar(n.clave, n.dato) {
+			return
+		}
+	}
+	if cmp(n.clave, *desde) < 0 || enRango {
+		n.der.iterarRango(visitar, cmp, desde, hasta)
+	}
 }
 
 //--------------------------------PRIMITIVAS DEL DICCIONARIO ORDENADO--------------------------------------------------//
 //---------------------------------------------------------------------------------------------------------------------//
 
 func (a *abb[K, V]) Guardar(clave K, dato V) {
-	// ...
+	a.guardar(&a.raiz, clave, dato) // Para modificar el nodo, paso un puntero a su puntero
+}
+
+func (a *abb[K, V]) Pertenece(clave K) bool {
+	nodo := a.raiz
+	encontrado, _ := nodo.buscar(clave, a.cmp)
+	return encontrado
 }
 
 func (a *abb[K, V]) Obtener(clave K) V {
 	nodo := a.raiz
-	for nodo != nil {
-		comparacion := a.cmp(clave, nodo.clave)
-		if comparacion == 0 {
-			return nodo.dato // Encontré la clave que estaba buscando
-		}
-		if comparacion < 0 {
-			nodo = nodo.izq
-		}
-		if comparacion > 0 {
-			nodo = nodo.der
-		}
+	encontrado, dato := nodo.buscar(clave, a.cmp)
+
+	if encontrado {
+		return dato
 	}
 	panic(_MENSAJE_PANIC_DICCIONARIO)
-}
-
-func (a *abb[K, V]) Pertenece(clave K) bool {
-	// ...
 }
 
 func (a *abb[K, V]) Borrar(clave K) V {
@@ -161,16 +220,19 @@ func (a *abb[K, V]) Cantidad() int {
 	return a.cantidad
 }
 
+// Iteradores internos
+
 func (a *abb[K, V]) Iterar(visitar func(K, V) bool) {
-	// ...
+	nodo := a.raiz
+	nodo.iterar(visitar)
 }
 
 func (a *abb[K, V]) IterarRango(desde *K, hasta *K, visitar func(K, V) bool) {
-	// ...
+	nodo := a.raiz
+	nodo.iterarRango(visitar, a.cmp, desde, hasta)
 }
 
-//--------------------------------- PRIMITIVAS ITERADOR EXTERNO ----------------------------------------------------------------//
-//------------------------------------------------------------------------------------------------------------------------------//
+// Iteradores externos
 
 func (a *abb[K, V]) Iterador() IterDiccionario[K, V] {
 	pila := TDAPila.CrearPilaDinamica[*nodoABB[K, V]]()
@@ -202,8 +264,11 @@ func (a *abb[K, V]) IteradorRango(desde *K, hasta *K) IterDiccionario[K, V] {
 	return &iterABB[K, V]{pila: pila, cmp: a.cmp, desde: desde, hasta: hasta}
 }
 
+//--------------------------------- PRIMITIVAS ITERADOR EXTERNO ----------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------------------------------------//
+
 func (iter *iterABB[K, V]) HaySiguiente() bool {
-	// ...
+	return !iter.pila.EstaVacia()
 }
 
 func (iter *iterABB[K, V]) VerActual() (K, V) {
