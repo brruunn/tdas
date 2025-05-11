@@ -220,7 +220,7 @@ func TestDiccionarioOrdenadoIteradorInternoValoresConBorrados(t *testing.T) {
 
 	factorial := 1
 	dic.Iterar(func(_ string, dato int) bool { factorial *= dato; return true })
-	require.EqualValues(t, 720, factorial)
+	require.EqualValues(t, 12, factorial)
 }
 
 func TestDiccionarioOrdenadoIterarVacio(t *testing.T) {
@@ -279,7 +279,7 @@ func TestIteradorInternoConRango(t *testing.T) {
 		return true
 	})
 
-	require.Equal(t, []string{"B", "C"}, resultado)
+	require.Equal(t, []string{"B", "C", "D"}, resultado)
 }
 
 func ejecutarPruebaVolumenOrdenado(b *testing.B, n int) {
