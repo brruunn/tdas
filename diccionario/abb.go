@@ -71,12 +71,12 @@ func (n *nodoABB[K, V]) buscar(clave K, cmp funcCmp[K]) (bool, V) {
 	return n.der.buscar(clave, cmp)
 }
 
-func (n *nodoABB[K, V]) iterar(visitar func(K, V) bool, cmp funcCmp[K]) bool {
+func (n *nodoABB[K, V]) iterar(visitar func(K, V) bool) bool {
 	if n == nil {
 		return true
 	}
 
-	if !n.izq.iterar(visitar, cmp) {
+	if !n.izq.iterar(visitar) {
 		return false
 	}
 
@@ -84,7 +84,7 @@ func (n *nodoABB[K, V]) iterar(visitar func(K, V) bool, cmp funcCmp[K]) bool {
 		return false
 	}
 
-	return n.der.iterar(visitar, cmp)
+	return n.der.iterar(visitar)
 }
 
 func (n *nodoABB[K, V]) iterarRango(visitar func(K, V) bool, cmp funcCmp[K], desde *K, hasta *K) bool {
@@ -110,6 +110,24 @@ func (n *nodoABB[K, V]) iterarRango(visitar func(K, V) bool, cmp funcCmp[K], des
 	}
 
 	return true
+}
+
+func (iter *iterABB[K, V]) apilar(nodo *nodoABB[K, V]) {
+	if nodo == nil {
+		return
+	}
+	if (iter.desde == nil || iter.cmp(nodo.clave, *iter.desde) >= 0) &&
+		(iter.hasta == nil || iter.cmp(nodo.clave, *iter.hasta) <= 0) {
+		iter.pila.Apilar(nodo)
+		iter.apilar(nodo.izq)
+
+	} else if iter.hasta != nil && iter.cmp(nodo.clave, *iter.hasta) > 0 {
+		iter.apilar(nodo.izq)
+
+	} else if iter.desde != nil && iter.cmp(nodo.clave, *iter.desde) < 0 {
+		iter.apilar(nodo.der)
+
+	}
 }
 
 //--------------------------------PRIMITIVAS DEL DICCIONARIO ORDENADO--------------------------------------------------//
@@ -233,7 +251,7 @@ func (a *abb[K, V]) Cantidad() int {
 // Iteradores internos
 
 func (a *abb[K, V]) Iterar(visitar func(K, V) bool) {
-	a.raiz.iterar(visitar, a.cmp)
+	a.raiz.iterar(visitar)
 }
 
 func (a *abb[K, V]) IterarRango(desde *K, hasta *K, visitar func(K, V) bool) {
@@ -244,32 +262,18 @@ func (a *abb[K, V]) IterarRango(desde *K, hasta *K, visitar func(K, V) bool) {
 
 func (a *abb[K, V]) Iterador() IterDiccionario[K, V] {
 	pila := TDAPila.CrearPilaDinamica[*nodoABB[K, V]]()
-	nodo := a.raiz
+	iter := iterABB[K, V]{pila: pila, cmp: a.cmp}
 
-	for nodo != nil {
-		pila.Apilar(nodo)
-		nodo = nodo.izq
-	}
-
-	return &iterABB[K, V]{pila: pila, cmp: a.cmp}
+	iter.apilar(a.raiz)
+	return &iter
 }
 
 func (a *abb[K, V]) IteradorRango(desde *K, hasta *K) IterDiccionario[K, V] {
 	pila := TDAPila.CrearPilaDinamica[*nodoABB[K, V]]()
-	nodo := a.raiz
+	iter := iterABB[K, V]{pila: pila, desde: desde, hasta: hasta, cmp: a.cmp}
 
-	for nodo != nil {
-		if a.cmp(nodo.clave, *desde) < 0 {
-			nodo = nodo.der
-		} else if a.cmp(nodo.clave, *hasta) > 0 {
-			nodo = nodo.izq
-		} else {
-			pila.Apilar(nodo)
-			nodo = nodo.izq
-		}
-	}
-
-	return &iterABB[K, V]{pila: pila, cmp: a.cmp, desde: desde, hasta: hasta}
+	iter.apilar(a.raiz)
+	return &iter
 }
 
 //--------------------------------- PRIMITIVAS ITERADOR EXTERNO ----------------------------------------------------------------//
@@ -293,10 +297,5 @@ func (iter *iterABB[K, V]) Siguiente() {
 	}
 
 	nodo := iter.pila.Desapilar()
-
-	actual := nodo.der
-	for actual != nil {
-		iter.pila.Apilar(actual)
-		actual = actual.izq
-	}
+	iter.apilar(nodo.der)
 }
