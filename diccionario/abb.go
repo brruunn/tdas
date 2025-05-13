@@ -34,6 +34,8 @@ func crearNodoABB[K comparable, V any](clave K, dato V) *nodoABB[K, V] {
 	return &nodoABB[K, V]{clave: clave, dato: dato}
 }
 
+// Función recursiva de Guardar
+
 func (a *abb[K, V]) guardar(ppNodo **nodoABB[K, V], clave K, dato V) {
 	if *ppNodo == nil {
 		*ppNodo = crearNodoABB(clave, dato)
@@ -55,6 +57,8 @@ func (a *abb[K, V]) guardar(ppNodo **nodoABB[K, V], clave K, dato V) {
 	}
 }
 
+// Función recursiva auxiliar, de Pertenece y Obtener
+
 func (n *nodoABB[K, V]) buscar(clave K, cmp funcCmp[K]) (bool, V) {
 	if n == nil {
 		var ningunDato V
@@ -71,29 +75,15 @@ func (n *nodoABB[K, V]) buscar(clave K, cmp funcCmp[K]) (bool, V) {
 	return n.der.buscar(clave, cmp)
 }
 
-func (n *nodoABB[K, V]) iterar(visitar func(K, V) bool) bool {
-	if n == nil {
-		return true
-	}
+// Función recursiva de Iterar e IterarRango
 
-	if !n.izq.iterar(visitar) {
-		return false
-	}
-
-	if !visitar(n.clave, n.dato) {
-		return false
-	}
-
-	return n.der.iterar(visitar)
-}
-
-func (n *nodoABB[K, V]) iterarRango(visitar func(K, V) bool, cmp funcCmp[K], desde *K, hasta *K) bool {
+func (n *nodoABB[K, V]) iterar(visitar func(K, V) bool, cmp funcCmp[K], desde *K, hasta *K) bool {
 	if n == nil {
 		return true
 	}
 
 	if desde == nil || cmp(n.clave, *desde) > 0 {
-		if !n.izq.iterarRango(visitar, cmp, desde, hasta) {
+		if !n.izq.iterar(visitar, cmp, desde, hasta) {
 			return false
 		}
 	}
@@ -106,11 +96,13 @@ func (n *nodoABB[K, V]) iterarRango(visitar func(K, V) bool, cmp funcCmp[K], des
 	}
 
 	if hasta == nil || cmp(n.clave, *hasta) < 0 {
-		return n.der.iterarRango(visitar, cmp, desde, hasta)
+		return n.der.iterar(visitar, cmp, desde, hasta)
 	}
 
 	return true
 }
+
+// Función recursiva auxiliar de Iterador, IteradorRango y Siguiente
 
 func (iter *iterABB[K, V]) apilar(nodo *nodoABB[K, V]) {
 	if nodo == nil {
@@ -130,23 +122,21 @@ func (iter *iterABB[K, V]) apilar(nodo *nodoABB[K, V]) {
 	}
 }
 
-//--------------------------------PRIMITIVAS DEL DICCIONARIO ORDENADO--------------------------------------------------//
-//---------------------------------------------------------------------------------------------------------------------//
+// -------------------------------------------------------------------------------------
+// -------------------- PRIMITIVAS DEL DICCIONARIO ORDENADO POR ABB --------------------
+// -------------------------------------------------------------------------------------
 
 func (a *abb[K, V]) Guardar(clave K, dato V) {
-	a.guardar(&a.raiz, clave, dato) // Para modificar el nodo, paso un puntero a su puntero
+	a.guardar(&a.raiz, clave, dato)
 }
 
 func (a *abb[K, V]) Pertenece(clave K) bool {
-	nodo := a.raiz
-	encontrado, _ := nodo.buscar(clave, a.cmp)
+	encontrado, _ := a.raiz.buscar(clave, a.cmp)
 	return encontrado
 }
 
 func (a *abb[K, V]) Obtener(clave K) V {
-	nodo := a.raiz
-	encontrado, dato := nodo.buscar(clave, a.cmp)
-
+	encontrado, dato := a.raiz.buscar(clave, a.cmp)
 	if encontrado {
 		return dato
 	}
@@ -251,11 +241,11 @@ func (a *abb[K, V]) Cantidad() int {
 // Iteradores internos
 
 func (a *abb[K, V]) Iterar(visitar func(K, V) bool) {
-	a.raiz.iterar(visitar)
+	a.raiz.iterar(visitar, a.cmp, nil, nil)
 }
 
 func (a *abb[K, V]) IterarRango(desde *K, hasta *K, visitar func(K, V) bool) {
-	a.raiz.iterarRango(visitar, a.cmp, desde, hasta)
+	a.raiz.iterar(visitar, a.cmp, desde, hasta)
 }
 
 // Iteradores externos
@@ -276,8 +266,9 @@ func (a *abb[K, V]) IteradorRango(desde *K, hasta *K) IterDiccionario[K, V] {
 	return &iter
 }
 
-//--------------------------------- PRIMITIVAS ITERADOR EXTERNO ----------------------------------------------------------------//
-//------------------------------------------------------------------------------------------------------------------------------//
+// -------------------------------------------------------------------------
+// -------------------- PRIMITIVAS DEL ITERADOR EXTERNO --------------------
+// -------------------------------------------------------------------------
 
 func (iter *iterABB[K, V]) HaySiguiente() bool {
 	return !iter.pila.EstaVacia()
@@ -295,7 +286,6 @@ func (iter *iterABB[K, V]) Siguiente() {
 	if !iter.HaySiguiente() {
 		panic(_MENSAJE_PANIC_ITER)
 	}
-
 	nodo := iter.pila.Desapilar()
 	iter.apilar(nodo.der)
 }
