@@ -128,7 +128,7 @@ func (iter *iterHashAbierto[K, V]) buscarLista() {
 // --------------------------------------------------------------------------------------
 
 func (hash *hashAbierto[K, V]) Guardar(clave K, dato V) {
-	_, _ = hash.buscar(clave, true)
+	hash.buscar(clave, true) // Si la clave se repite, borramos su par
 	pos := convertirAPosicion(clave, hash.tam)
 	hash.tabla[pos].InsertarUltimo(crearPar(clave, dato))
 	hash.cantidad++
@@ -152,7 +152,7 @@ func (hash *hashAbierto[K, V]) Obtener(clave K) V {
 }
 
 func (hash *hashAbierto[K, V]) Borrar(clave K) V {
-	encontrado, dato := hash.buscar(clave, true)
+	encontrado, dato := hash.buscar(clave, true) // Si la clave existe, borramos su par
 	if encontrado {
 		if float32(hash.cantidad)/float32(hash.tam) <= _MIN_FACTOR_DE_CARGA && hash.tam > _TAM_INICIAL {
 			hash.rehashear(hash.tam / _FACTOR_REDIMENSION)
