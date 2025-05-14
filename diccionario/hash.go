@@ -67,7 +67,7 @@ func convertirAPosicion[K comparable](clave K, tam int) int {
 
 // Auxiliar de Guardar, Pertenece, Obtener y Borrar
 
-func (hash *hashAbierto[K, V]) buscar(clave K, seBorraPar bool) (bool, V) {
+func (hash *hashAbierto[K, V]) buscar(clave K, seBorraPar bool) (bool, V, TDALista.Lista[parClaveValor[K, V]]) {
 	pos := convertirAPosicion(clave, hash.tam)
 	lista := hash.tabla[pos]
 
@@ -79,13 +79,13 @@ func (hash *hashAbierto[K, V]) buscar(clave K, seBorraPar bool) (bool, V) {
 				iter.Borrar()
 				hash.cantidad--
 			}
-			return true, par.dato
+			return true, par.dato, lista
 		}
 		iter.Siguiente()
 	}
 
 	var ningunDato V
-	return false, ningunDato
+	return false, ningunDato, lista
 }
 
 // Auxiliar de Guardar y Borrar
@@ -128,9 +128,8 @@ func (iter *iterHashAbierto[K, V]) buscarLista() {
 // --------------------------------------------------------------------------------------
 
 func (hash *hashAbierto[K, V]) Guardar(clave K, dato V) {
-	hash.buscar(clave, true) // Si la clave se repite, borramos su par
-	pos := convertirAPosicion(clave, hash.tam)
-	hash.tabla[pos].InsertarUltimo(crearPar(clave, dato))
+	_, _, lista := hash.buscar(clave, true) // Si la clave se repite, borramos su par
+	lista.InsertarUltimo(crearPar(clave, dato))
 	hash.cantidad++
 
 	if float32(hash.cantidad)/float32(hash.tam) >= _MAX_FACTOR_DE_CARGA {
@@ -139,12 +138,12 @@ func (hash *hashAbierto[K, V]) Guardar(clave K, dato V) {
 }
 
 func (hash *hashAbierto[K, V]) Pertenece(clave K) bool {
-	encontrado, _ := hash.buscar(clave, false)
+	encontrado, _, _ := hash.buscar(clave, false)
 	return encontrado
 }
 
 func (hash *hashAbierto[K, V]) Obtener(clave K) V {
-	encontrado, dato := hash.buscar(clave, false)
+	encontrado, dato, _ := hash.buscar(clave, false)
 	if encontrado {
 		return dato
 	}
@@ -152,7 +151,7 @@ func (hash *hashAbierto[K, V]) Obtener(clave K) V {
 }
 
 func (hash *hashAbierto[K, V]) Borrar(clave K) V {
-	encontrado, dato := hash.buscar(clave, true) // Si la clave existe, borramos su par
+	encontrado, dato, _ := hash.buscar(clave, true) // Si la clave existe, borramos su par
 	if encontrado {
 		if float32(hash.cantidad)/float32(hash.tam) <= _MIN_FACTOR_DE_CARGA && hash.tam > _TAM_INICIAL {
 			hash.rehashear(hash.tam / _FACTOR_REDIMENSION)
