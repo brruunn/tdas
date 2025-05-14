@@ -449,7 +449,7 @@ func TestIteradorInternoRangoUnicoElemento(t *testing.T) {
 	require.Equal(t, []string{"A"}, resultado)
 }
 
-// TESTS ITERADOR EXTERNO
+// TESTS DEL ITERADOR EXTERNO
 
 func TestDiccionarioOrdenadoIterarVacio(t *testing.T) {
 	dic := TDADiccionario.CrearABB[string, int](strings.Compare)
