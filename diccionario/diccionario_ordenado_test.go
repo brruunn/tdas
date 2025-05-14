@@ -194,6 +194,63 @@ func TestDiccionarioOrdenadoGuardarYBorrarRepetidasVeces(t *testing.T) {
 	require.EqualValues(t, 0, dic.Cantidad())
 }
 
+func ejecutarPruebaVolumenDiccionarioOrdenado(b *testing.B, n int) {
+	dic := TDADiccionario.CrearABB[string, int](strings.Compare)
+
+	claves := make([]string, n)
+	valores := make([]int, n)
+
+	/* Inserta 'n' parejas en el hash */
+	for i := 0; i < n; i++ {
+		valores[i] = i
+		claves[i] = fmt.Sprintf("%08d", i)
+		dic.Guardar(claves[i], valores[i])
+	}
+
+	require.EqualValues(b, n, dic.Cantidad(), "La cantidad de elementos es incorrecta")
+
+	/* Verifica que devuelva los valores correctos */
+	ok := true
+	for i := 0; i < n; i++ {
+		ok = dic.Pertenece(claves[i])
+		if !ok {
+			break
+		}
+		ok = dic.Obtener(claves[i]) == valores[i]
+		if !ok {
+			break
+		}
+	}
+
+	require.True(b, ok, "Pertenece y Obtener con muchos elementos no funciona correctamente")
+	require.EqualValues(b, n, dic.Cantidad(), "La cantidad de elementos es incorrecta")
+
+	/* Verifica que borre y devuelva los valores correctos */
+	for i := 0; i < n; i++ {
+		ok = dic.Borrar(claves[i]) == valores[i]
+		if !ok {
+			break
+		}
+		ok = !dic.Pertenece(claves[i])
+		if !ok {
+			break
+		}
+	}
+
+	require.True(b, ok, "Borrar muchos elementos no funciona correctamente")
+	require.EqualValues(b, 0, dic.Cantidad())
+}
+
+func BenchmarkDiccionarioOrdenado(b *testing.B) {
+	for _, n := range TAMS_VOLUMEN {
+		b.Run(fmt.Sprintf("Prueba %d elementos", n), func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				ejecutarPruebaVolumenDiccionarioOrdenado(b, n)
+			}
+		})
+	}
+}
+
 // TESTS DEL ITERADOR INTERNO
 
 func TestDiccionarioOrdenadoIteradorInternoClaves(t *testing.T) {
@@ -526,4 +583,69 @@ func TestDiccionarioOrdenadoPruebaIterarTrasBorrados(t *testing.T) {
 	require.EqualValues(t, "A", v1)
 	iter.Siguiente()
 	require.False(t, iter.HaySiguiente())
+}
+
+func ejecutarPruebasVolumenIteradorDiccionarioOrdenado(b *testing.B, n int) {
+	dic := TDADiccionario.CrearABB[string, *int](strings.Compare)
+
+	claves := make([]string, n)
+	valores := make([]int, n)
+
+	/* Inserta 'n' parejas en el hash */
+	for i := 0; i < n; i++ {
+		claves[i] = fmt.Sprintf("%08d", i)
+		valores[i] = i
+		dic.Guardar(claves[i], &valores[i])
+	}
+
+	// Prueba de iteración sobre las claves almacenadas.
+	iter := dic.Iterador()
+	require.True(b, iter.HaySiguiente())
+
+	ok := true
+	var i int
+	var clave string
+	var valor *int
+
+	for i = 0; i < n; i++ {
+		if !iter.HaySiguiente() {
+			ok = false
+			break
+		}
+		c1, v1 := iter.VerActual()
+		clave = c1
+		if clave == "" {
+			ok = false
+			break
+		}
+		valor = v1
+		if valor == nil {
+			ok = false
+			break
+		}
+		*valor = n
+		iter.Siguiente()
+	}
+	require.True(b, ok, "Iteracion en volumen no funciona correctamente")
+	require.EqualValues(b, n, i, "No se recorrió todo el largo")
+	require.False(b, iter.HaySiguiente(), "El iterador debe estar al final luego de recorrer")
+
+	ok = true
+	for i = 0; i < n; i++ {
+		if valores[i] != n {
+			ok = false
+			break
+		}
+	}
+	require.True(b, ok, "No se cambiaron todos los elementos")
+}
+
+func BenchmarkIteradorDiccionarioOrdenado(b *testing.B) {
+	for _, n := range TAMS_VOLUMEN {
+		b.Run(fmt.Sprintf("Prueba %d elementos", n), func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				ejecutarPruebasVolumenIteradorDiccionarioOrdenado(b, n)
+			}
+		})
+	}
 }
