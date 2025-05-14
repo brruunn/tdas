@@ -4,7 +4,7 @@ import (
 	TDAPila "tdas/pila"
 )
 
-type funcCmp[K comparable] func(K, K) int
+type cmp[K comparable] func(c1, c2 K) int
 
 type nodoABB[K comparable, V any] struct {
 	izq   *nodoABB[K, V]
@@ -16,17 +16,17 @@ type nodoABB[K comparable, V any] struct {
 type abb[K comparable, V any] struct {
 	raiz     *nodoABB[K, V]
 	cantidad int
-	cmp      funcCmp[K]
+	cmp      cmp[K]
 }
 
 type iterABB[K comparable, V any] struct {
 	pila  TDAPila.Pila[*nodoABB[K, V]]
 	desde *K
 	hasta *K
-	cmp   funcCmp[K]
+	cmp   cmp[K]
 }
 
-func CrearABB[K comparable, V any](cmp funcCmp[K]) DiccionarioOrdenado[K, V] {
+func CrearABB[K comparable, V any](cmp cmp[K]) DiccionarioOrdenado[K, V] {
 	return &abb[K, V]{cmp: cmp}
 }
 
@@ -59,7 +59,7 @@ func (a *abb[K, V]) guardar(ppNodo **nodoABB[K, V], clave K, dato V) {
 
 // Función recursiva auxiliar, de Pertenece y Obtener
 
-func (n *nodoABB[K, V]) buscar(clave K, cmp funcCmp[K]) (bool, V) {
+func (n *nodoABB[K, V]) buscar(clave K, cmp cmp[K]) (bool, V) {
 	if n == nil {
 		var ningunDato V
 		return false, ningunDato
@@ -77,7 +77,7 @@ func (n *nodoABB[K, V]) buscar(clave K, cmp funcCmp[K]) (bool, V) {
 
 // Función recursiva de Iterar e IterarRango
 
-func (n *nodoABB[K, V]) iterar(visitar func(K, V) bool, cmp funcCmp[K], desde *K, hasta *K) bool {
+func (n *nodoABB[K, V]) iterar(visitar func(K, V) bool, cmp cmp[K], desde *K, hasta *K) bool {
 	if n == nil {
 		return true
 	}
