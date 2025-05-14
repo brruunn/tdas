@@ -122,6 +122,72 @@ func (iter *iterABB[K, V]) apilar(nodo *nodoABB[K, V]) {
 	}
 }
 
+func (a *abb[K, V]) reemplazarNodo(ppPadre **nodoABB[K, V], ppActual **nodoABB[K, V], reemplazo *nodoABB[K, V]) {
+	// si ppPadre es nil, estamos en la raiz: reasignamos a.raiz
+	if ppPadre == nil {
+		a.raiz = reemplazo
+		return
+	}
+	// ppPadre no es nil, así que *ppPadre siempre apunta a un nodo existente
+	padre := *ppPadre
+	if padre.izq == *ppActual {
+		padre.izq = reemplazo
+	} else {
+		padre.der = reemplazo
+	}
+}
+
+func (a *abb[K, V]) borrarNodo(ppPadre **nodoABB[K, V], ppActual **nodoABB[K, V], clave K) V {
+	if *ppActual == nil {
+		panic(_MENSAJE_PANIC_DICCIONARIO)
+	}
+
+	comparacion := a.cmp(clave, (*ppActual).clave)
+	if comparacion < 0 {
+		return a.borrarNodo(ppActual, &(*ppActual).izq, clave)
+	}
+	if comparacion > 0 {
+		return a.borrarNodo(ppActual, &(*ppActual).der, clave)
+	}
+
+	valor := (*ppActual).dato
+
+	// Caso 1: Nodo hoja
+	if (*ppActual).izq == nil && (*ppActual).der == nil {
+		a.reemplazarNodo(ppPadre, ppActual, nil)
+	} else if (*ppActual).izq == nil {
+		// Caso 2: Solo hijo derecho
+		a.reemplazarNodo(ppPadre, ppActual, (*ppActual).der)
+	} else if (*ppActual).der == nil {
+		// Caso 3: Solo hijo izquierdo
+		a.reemplazarNodo(ppPadre, ppActual, (*ppActual).izq)
+	} else {
+		// Caso 4: Dos hijos
+		padreSucesor := *ppActual
+		sucesor := (*ppActual).der
+
+		// Buscar el sucesor
+		for sucesor.izq != nil {
+			padreSucesor = sucesor
+			sucesor = sucesor.izq
+		}
+
+		// Copiar datos del sucesor al nodo actual
+		(*ppActual).clave = sucesor.clave
+		(*ppActual).dato = sucesor.dato
+
+		// Eliminar el sucesor (que es un nodo con 0 o 1 hijo)
+		if padreSucesor == *ppActual {
+			padreSucesor.der = sucesor.der
+		} else {
+			padreSucesor.izq = sucesor.der
+		}
+	}
+
+	a.cantidad--
+	return valor
+}
+
 // -------------------------------------------------------------------------------------
 // -------------------- PRIMITIVAS DEL DICCIONARIO ORDENADO POR ABB --------------------
 // -------------------------------------------------------------------------------------
@@ -144,94 +210,7 @@ func (a *abb[K, V]) Obtener(clave K) V {
 }
 
 func (a *abb[K, V]) Borrar(clave K) V {
-	var padre *nodoABB[K, V]
-	nodo := a.raiz
-	var direccion *(*nodoABB[K, V]) // Puntero al puntero del nodo en el padre
-
-	// Buscar el nodo a borrar
-	for nodo != nil {
-		comparacion := a.cmp(clave, nodo.clave)
-		if comparacion == 0 {
-			// Caso 1: nodo sin hijos
-			if nodo.izq == nil && nodo.der == nil {
-				if padre == nil {
-					a.raiz = nil
-				}
-				if padre != nil && direccion == &padre.izq {
-					padre.izq = nil
-				}
-				if padre != nil && direccion == &padre.der {
-					padre.der = nil
-				}
-			}
-
-			// Caso 2: nodo con un solo hijo (izquierdo)
-			if nodo.izq != nil && nodo.der == nil {
-				if padre == nil {
-					a.raiz = nodo.izq
-				}
-				if padre != nil && direccion == &padre.izq {
-					padre.izq = nodo.izq
-				}
-				if padre != nil && direccion == &padre.der {
-					padre.der = nodo.izq
-				}
-			}
-
-			// Caso 2: nodo con un solo hijo (derecho)
-			if nodo.izq == nil && nodo.der != nil {
-				if padre == nil {
-					a.raiz = nodo.der
-				}
-				if padre != nil && direccion == &padre.izq {
-					padre.izq = nodo.der
-				}
-				if padre != nil && direccion == &padre.der {
-					padre.der = nodo.der
-				}
-			}
-
-			// Caso 3: nodo con dos hijos
-			if nodo.izq != nil && nodo.der != nil {
-				// buscar sucesor inorder (menor del subárbol derecho)
-				sucesorPadre := nodo
-				sucesor := nodo.der
-
-				for sucesor.izq != nil {
-					sucesorPadre = sucesor
-					sucesor = sucesor.izq
-				}
-
-				// copiar datos del sucesor
-				nodo.clave = sucesor.clave
-				nodo.dato = sucesor.dato
-
-				// eliminar el sucesor
-				if sucesorPadre == nodo {
-					sucesorPadre.der = sucesor.der
-				}
-				if sucesorPadre != nodo {
-					sucesorPadre.izq = sucesor.der
-				}
-			}
-
-			a.cantidad--
-			return nodo.dato
-		}
-
-		// Continuar búsqueda
-		padre = nodo
-		if comparacion < 0 {
-			direccion = &nodo.izq
-			nodo = nodo.izq
-		}
-		if comparacion > 0 {
-			direccion = &nodo.der
-			nodo = nodo.der
-		}
-	}
-
-	panic(_MENSAJE_PANIC_DICCIONARIO)
+	return a.borrarNodo(nil, &a.raiz, clave)
 }
 
 func (a *abb[K, V]) Cantidad() int {
