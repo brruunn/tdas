@@ -137,6 +137,18 @@ func (a *abb[K, V]) reemplazarNodo(ppPadre **nodoABB[K, V], ppActual **nodoABB[K
 	}
 }
 
+func (a *abb[K, V]) encontrarSucesor(ppActual **nodoABB[K, V]) (ppPadreSucesor **nodoABB[K, V], sucesor *nodoABB[K, V]) {
+	// iniciamos en el hijo derecho del nodo actual
+	ppPadreSucesor = ppActual
+	sucesor = (*ppActual).der
+	// buscamos el mínimo descendiendo por la izquierda
+	for sucesor.izq != nil {
+		ppPadreSucesor = &sucesor.izq
+		sucesor = sucesor.izq
+	}
+	return ppPadreSucesor, sucesor
+}
+
 func (a *abb[K, V]) borrarNodo(ppPadre **nodoABB[K, V], ppActual **nodoABB[K, V], clave K) V {
 	if *ppActual == nil {
 		panic(_MENSAJE_PANIC_DICCIONARIO)
@@ -163,25 +175,12 @@ func (a *abb[K, V]) borrarNodo(ppPadre **nodoABB[K, V], ppActual **nodoABB[K, V]
 		a.reemplazarNodo(ppPadre, ppActual, (*ppActual).izq)
 	} else {
 		// Caso 4: Dos hijos
-		padreSucesor := *ppActual
-		sucesor := (*ppActual).der
-
-		// Buscar el sucesor
-		for sucesor.izq != nil {
-			padreSucesor = sucesor
-			sucesor = sucesor.izq
-		}
-
+		ppPadreSucesor, sucesor := a.encontrarSucesor(ppActual)
 		// Copiar datos del sucesor al nodo actual
 		(*ppActual).clave = sucesor.clave
 		(*ppActual).dato = sucesor.dato
-
-		// Eliminar el sucesor (que es un nodo con 0 o 1 hijo)
-		if padreSucesor == *ppActual {
-			padreSucesor.der = sucesor.der
-		} else {
-			padreSucesor.izq = sucesor.der
-		}
+		// Eliminar el sucesor (tiene a lo sumo hijo derecho)
+		a.reemplazarNodo(ppPadreSucesor, &sucesor, sucesor.der)
 	}
 
 	a.cantidad--
