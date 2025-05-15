@@ -11,6 +11,62 @@ import (
 
 // TESTS DEL DICCIONARIO ORDENADO
 
+func TestBorraRaiz2Hijos(t *testing.T) {
+	dic := TDADiccionario.CrearABB[int, int](func(a, b int) int { return a - b })
+
+	dic.Guardar(10, 10)
+	dic.Guardar(5, 5)
+	dic.Guardar(15, 15)
+
+	require.Equal(t, 10, dic.Borrar(10))
+	require.Equal(t, 2, dic.Cantidad())
+}
+
+func TestBorraNodo2Hijos(t *testing.T) {
+	dic := TDADiccionario.CrearABB[int, int](func(a, b int) int { return a - b })
+
+	dic.Guardar(10, 10)
+	dic.Guardar(5, 5)
+	dic.Guardar(15, 15)
+	dic.Guardar(13, 13)
+	dic.Guardar(17, 17)
+
+	require.Equal(t, 15, dic.Borrar(15))
+	require.Equal(t, 4, dic.Cantidad())
+}
+
+func TestBorrarNodo2HijosSucesorProfundo(t *testing.T) {
+	dic := TDADiccionario.CrearABB[int, int](func(a, b int) int { return a - b })
+
+	dic.Guardar(10, 10)
+	dic.Guardar(5, 5)
+	dic.Guardar(15, 15)
+	dic.Guardar(20, 20)
+	dic.Guardar(19, 19)
+	dic.Guardar(18, 18)
+	dic.Guardar(17, 17)
+	dic.Guardar(16, 16)
+
+	require.Equal(t, 15, dic.Borrar(15))
+	require.Equal(t, 7, dic.Cantidad())
+}
+
+func TestBorrarNodo2HijosSucesorProfundoConHijo(t *testing.T) {
+	dic := TDADiccionario.CrearABB[int, int](func(a, b int) int { return a - b })
+
+	dic.Guardar(10, 10)
+	dic.Guardar(5, 5)
+	dic.Guardar(15, 15)
+	dic.Guardar(20, 20)
+	dic.Guardar(19, 19)
+	dic.Guardar(18, 18)
+	dic.Guardar(16, 16)
+	dic.Guardar(17, 17)
+
+	require.Equal(t, 15, dic.Borrar(15))
+	require.Equal(t, 7, dic.Cantidad())
+}
+
 func TestDiccionarioOrdenadoVacio(t *testing.T) {
 	t.Log("Comprueba que DiccionarioOrdenado vacío no tiene claves")
 	dic := TDADiccionario.CrearABB[string, string](strings.Compare)
