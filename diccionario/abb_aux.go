@@ -77,15 +77,6 @@ func (a *abb[K, V]) reemplazarNodo(ppPadre **nodoABB[K, V], ppActual **nodoABB[K
 	}
 }
 
-func (a *abb[K, V]) encontrarSucesor(padreSucesor, sucesor *nodoABB[K, V]) (pS, s *nodoABB[K, V]) {
-	if sucesor.izq == nil {
-		return padreSucesor, sucesor
-	}
-
-	// Buscamos el menor nodo, del subárbol derecho, descendiendo por izquierda
-	return a.encontrarSucesor(sucesor, sucesor.izq)
-}
-
 // Función recursiva de Borrar
 
 func (a *abb[K, V]) borrar(ppPadre **nodoABB[K, V], ppActual **nodoABB[K, V], clave K) V {
@@ -104,32 +95,27 @@ func (a *abb[K, V]) borrar(ppPadre **nodoABB[K, V], ppActual **nodoABB[K, V], cl
 	valor := (*ppActual).dato
 
 	if (*ppActual).izq == nil && (*ppActual).der == nil {
-
-		// Caso 1: Nodo hoja
 		a.reemplazarNodo(ppPadre, ppActual, nil)
-
 	} else if (*ppActual).der == nil {
-
-		// Caso 2: Solo hijo izquierdo
 		a.reemplazarNodo(ppPadre, ppActual, (*ppActual).izq)
-
 	} else if (*ppActual).izq == nil {
-
-		// Caso 3: Solo hijo derecho
 		a.reemplazarNodo(ppPadre, ppActual, (*ppActual).der)
-
 	} else {
+		// Caso 4: Dos hijos - Encontrar sucesor y borrarlo
+		sucesor := (*ppActual).der
+		for sucesor.izq != nil {
+			sucesor = sucesor.izq
+		}
+		claveSucesor := sucesor.clave
+		datoSucesor := sucesor.dato
 
-		// Caso 4: Dos hijos
-		padreSucesor, sucesor := a.encontrarSucesor(*ppActual, (*ppActual).der)
+		// Copiar datos al nodo actual
+		(*ppActual).clave = claveSucesor
+		(*ppActual).dato = datoSucesor
 
-		// Copiar datos del sucesor al nodo actual
-		(*ppActual).clave = sucesor.clave
-		(*ppActual).dato = sucesor.dato
-
-		// Eliminar el sucesor (tiene a lo sumo hijo derecho)
-		a.reemplazarNodo(&padreSucesor, &sucesor, sucesor.der)
-
+		// Borrar el sucesor del subárbol derecho
+		a.borrar(ppActual, &(*ppActual).der, claveSucesor)
+		return valor // Evitar decrementar cantidad dos veces
 	}
 
 	a.cantidad--
