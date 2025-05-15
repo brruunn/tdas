@@ -47,7 +47,7 @@ func crearPar[K comparable, V any](clave K, dato V) parClaveValor[K, V] {
 // --------------------------------------------------------------------------------------
 
 func (hash *hashAbierto[K, V]) Guardar(clave K, dato V) {
-	_, _, lista := hash.buscar(clave, true) // Si la clave se repite, borramos su par
+	_, _, lista := hash.hashBuscar(clave, true) // Si la clave se repite, borramos su par
 	lista.InsertarUltimo(crearPar(clave, dato))
 	hash.cantidad++
 
@@ -57,12 +57,12 @@ func (hash *hashAbierto[K, V]) Guardar(clave K, dato V) {
 }
 
 func (hash *hashAbierto[K, V]) Pertenece(clave K) bool {
-	encontrado, _, _ := hash.buscar(clave, false)
+	encontrado, _, _ := hash.hashBuscar(clave, false)
 	return encontrado
 }
 
 func (hash *hashAbierto[K, V]) Obtener(clave K) V {
-	encontrado, dato, _ := hash.buscar(clave, false)
+	encontrado, dato, _ := hash.hashBuscar(clave, false)
 	if encontrado {
 		return dato
 	}
@@ -70,7 +70,7 @@ func (hash *hashAbierto[K, V]) Obtener(clave K) V {
 }
 
 func (hash *hashAbierto[K, V]) Borrar(clave K) V {
-	encontrado, dato, _ := hash.buscar(clave, true) // Si la clave existe, borramos su par
+	encontrado, dato, _ := hash.hashBuscar(clave, true) // Si la clave existe, borramos su par
 	if encontrado {
 		if float32(hash.cantidad)/float32(hash.tam) <= _MIN_FACTOR_DE_CARGA && hash.tam > _TAM_INICIAL {
 			hash.rehashear(hash.tam / _FACTOR_REDIMENSION)

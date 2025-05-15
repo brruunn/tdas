@@ -43,12 +43,12 @@ func (a *abb[K, V]) Guardar(clave K, dato V) {
 }
 
 func (a *abb[K, V]) Pertenece(clave K) bool {
-	encontrado, _ := a.raiz.buscar(clave, a.cmp)
+	encontrado, _ := a.raiz.abbBuscar(clave, a.cmp)
 	return encontrado
 }
 
 func (a *abb[K, V]) Obtener(clave K) V {
-	encontrado, dato := a.raiz.buscar(clave, a.cmp)
+	encontrado, dato := a.raiz.abbBuscar(clave, a.cmp)
 	if encontrado {
 		return dato
 	}
