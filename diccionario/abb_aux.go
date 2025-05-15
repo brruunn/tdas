@@ -25,7 +25,7 @@ func (a *abb[K, V]) guardar(ppNodo **nodoABB[K, V], clave K, dato V) {
 
 // Función recursiva auxiliar de Pertenece y Obtener
 
-func (n *nodoABB[K, V]) abbBuscar(clave K, cmp cmp[K]) (bool, V) {
+func (n *nodoABB[K, V]) abbBuscar(clave K, cmp funcCmp[K]) (bool, V) {
 	if n == nil {
 		var ningunDato V
 		return false, ningunDato
@@ -41,7 +41,7 @@ func (n *nodoABB[K, V]) abbBuscar(clave K, cmp cmp[K]) (bool, V) {
 	return n.der.abbBuscar(clave, cmp)
 }
 
-func (n *nodoABB[K, V]) abbBuscarNodo(clave K, cmp cmp[K]) *nodoABB[K, V] {
+func (n *nodoABB[K, V]) abbBuscarNodo(clave K, cmp funcCmp[K]) *nodoABB[K, V] {
 	if n == nil {
 		return nil
 	}
@@ -136,7 +136,7 @@ func (a *abb[K, V]) borrar(ppPadre **nodoABB[K, V], ppActual **nodoABB[K, V], cl
 
 // Función recursiva de Iterar e IterarRango
 
-func (n *nodoABB[K, V]) iterar(visitar func(K, V) bool, cmp cmp[K], desde *K, hasta *K) bool {
+func (n *nodoABB[K, V]) iterar(visitar func(K, V) bool, cmp funcCmp[K], desde *K, hasta *K) bool {
 	if n == nil {
 		return true
 	}
