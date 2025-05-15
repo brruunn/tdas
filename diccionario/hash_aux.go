@@ -20,7 +20,7 @@ func hashingFNV(clave []byte, tam int) int {
 	return int(h % uint64(tam))
 }
 
-// Auxiliar de buscar y Guardar
+// Auxiliar de hashBuscar
 
 func convertirAPosicion[K comparable](clave K, tam int) int {
 	claveBytes := convertirABytes(clave)
