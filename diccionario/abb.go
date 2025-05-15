@@ -4,7 +4,7 @@ import (
 	TDAPila "tdas/pila"
 )
 
-type funcCmp[K comparable] func(c1, c2 K) int
+type cmp[K comparable] func(c1, c2 K) int
 
 type nodoABB[K comparable, V any] struct {
 	izq   *nodoABB[K, V]
@@ -16,17 +16,17 @@ type nodoABB[K comparable, V any] struct {
 type abb[K comparable, V any] struct {
 	raiz     *nodoABB[K, V]
 	cantidad int
-	cmp      funcCmp[K]
+	cmp      cmp[K]
 }
 
 type iterABB[K comparable, V any] struct {
 	pila  TDAPila.Pila[*nodoABB[K, V]]
 	desde *K
 	hasta *K
-	cmp   funcCmp[K]
+	cmp   cmp[K]
 }
 
-func CrearABB[K comparable, V any](cmp funcCmp[K]) DiccionarioOrdenado[K, V] {
+func CrearABB[K comparable, V any](cmp cmp[K]) DiccionarioOrdenado[K, V] {
 	return &abb[K, V]{cmp: cmp}
 }
 
@@ -39,56 +39,33 @@ func crearNodoABB[K comparable, V any](clave K, dato V) *nodoABB[K, V] {
 // -------------------------------------------------------------------------------------
 
 func (a *abb[K, V]) Guardar(clave K, dato V) {
-	encontrado, _, nodo := a.abbBuscar(clave, nil, &a.raiz)
-	if encontrado {
-		(*nodo).dato = dato
-	} else {
-		*nodo = crearNodoABB(clave, dato)
-		a.cantidad++
+	nodo := a.raiz.abbBuscarNodo(clave, a.cmp)
+	if nodo != nil {
+		nodo.dato = dato
+		return
 	}
+	a.guardar(&a.raiz, clave, dato)
 }
 
 func (a *abb[K, V]) Pertenece(clave K) bool {
-	encontrado, _, _ := a.abbBuscar(clave, nil, &a.raiz)
+	encontrado, _ := a.raiz.abbBuscar(clave, a.cmp)
 	return encontrado
 }
 
 func (a *abb[K, V]) Obtener(clave K) V {
-	encontrado, _, nodo := a.abbBuscar(clave, nil, &a.raiz)
+	encontrado, dato := a.raiz.abbBuscar(clave, a.cmp)
 	if encontrado {
-		return (*nodo).dato
+		return dato
 	}
 	panic(_MENSAJE_PANIC_DICCIONARIO)
 }
 
 func (a *abb[K, V]) Borrar(clave K) V {
-	encontrado, padre, nodo := a.abbBuscar(clave, nil, &a.raiz)
-
-	if encontrado {
-		valor := (*nodo).dato
-
-		if (*nodo).izq == nil && (*nodo).der == nil {
-			a.reemplazarNodo(padre, nodo, nil)
-
-		} else if (*nodo).izq != nil {
-			a.reemplazarNodo(padre, nodo, (*nodo).izq)
-
-		} else if (*nodo).der != nil {
-			a.reemplazarNodo(padre, nodo, (*nodo).der)
-
-		} else {
-			padreSucesor, sucesor := a.encontrarSucesor(*nodo, (*nodo).der)
-			(*nodo).clave = sucesor.clave
-			(*nodo).dato = sucesor.dato
-			a.reemplazarNodo(&padreSucesor, &sucesor, sucesor.der)
-
-		}
-
-		a.cantidad--
-		return valor
+	nodo := a.raiz.abbBuscarNodo(clave, a.cmp)
+	if nodo == nil {
+		panic(_MENSAJE_PANIC_DICCIONARIO)
 	}
-
-	panic(_MENSAJE_PANIC_DICCIONARIO)
+	return a.borrar(nil, &a.raiz, clave)
 }
 
 func (a *abb[K, V]) Cantidad() int {
