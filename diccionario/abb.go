@@ -39,6 +39,11 @@ func crearNodoABB[K comparable, V any](clave K, dato V) *nodoABB[K, V] {
 // -------------------------------------------------------------------------------------
 
 func (a *abb[K, V]) Guardar(clave K, dato V) {
+	nodo := a.raiz.abbBuscarNodo(clave, a.cmp)
+	if nodo != nil {
+		nodo.dato = dato
+		return
+	}
 	a.guardar(&a.raiz, clave, dato)
 }
 
@@ -56,6 +61,10 @@ func (a *abb[K, V]) Obtener(clave K) V {
 }
 
 func (a *abb[K, V]) Borrar(clave K) V {
+	nodo := a.raiz.abbBuscarNodo(clave, a.cmp)
+	if nodo == nil {
+		panic(_MENSAJE_PANIC_DICCIONARIO)
+	}
 	return a.borrar(nil, &a.raiz, clave)
 }
 
