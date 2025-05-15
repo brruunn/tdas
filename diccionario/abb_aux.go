@@ -41,6 +41,21 @@ func (n *nodoABB[K, V]) abbBuscar(clave K, cmp cmp[K]) (bool, V) {
 	return n.der.abbBuscar(clave, cmp)
 }
 
+func (n *nodoABB[K, V]) abbBuscarNodo(clave K, cmp cmp[K]) *nodoABB[K, V] {
+	if n == nil {
+		return nil
+	}
+
+	comparacion := cmp(clave, n.clave)
+	if comparacion == 0 {
+		return n
+	} else if comparacion < 0 {
+		return n.izq.abbBuscarNodo(clave, cmp)
+	} else {
+		return n.der.abbBuscarNodo(clave, cmp)
+	}
+}
+
 // Funciones recursivas auxiliares de borrar
 
 func (a *abb[K, V]) reemplazarNodo(ppPadre **nodoABB[K, V], ppActual **nodoABB[K, V], reemplazo *nodoABB[K, V]) {
