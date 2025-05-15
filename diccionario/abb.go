@@ -76,7 +76,11 @@ func (a *abb[K, V]) IterarRango(desde *K, hasta *K, visitar func(K, V) bool) {
 // Iteradores externos
 
 func (a *abb[K, V]) Iterador() IterDiccionario[K, V] {
-	return a.IteradorRango(nil, nil)
+	pila := TDAPila.CrearPilaDinamica[*nodoABB[K, V]]()
+	iter := iterABB[K, V]{pila: pila, cmp: a.cmp}
+
+	iter.apilar(a.raiz)
+	return &iter
 }
 
 func (a *abb[K, V]) IteradorRango(desde *K, hasta *K) IterDiccionario[K, V] {
