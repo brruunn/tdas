@@ -9,66 +9,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TESTS DEL DICCIONARIO ORDENADO
+// --------------------------------------------------------------------------------
+// -------------------- TESTS DEL DICCIONARIO ORDENADO POR ABB --------------------
+// --------------------------------------------------------------------------------
 
-func TestBorraRaiz2Hijos(t *testing.T) {
-	dic := TDADiccionario.CrearABB[int, int](func(a, b int) int { return a - b })
-
-	dic.Guardar(10, 10)
-	dic.Guardar(5, 5)
-	dic.Guardar(15, 15)
-
-	require.Equal(t, 10, dic.Borrar(10))
-	require.Equal(t, 2, dic.Cantidad())
-}
-
-func TestBorraNodo2Hijos(t *testing.T) {
-	dic := TDADiccionario.CrearABB[int, int](func(a, b int) int { return a - b })
-
-	dic.Guardar(10, 10)
-	dic.Guardar(5, 5)
-	dic.Guardar(15, 15)
-	dic.Guardar(13, 13)
-	dic.Guardar(17, 17)
-
-	require.Equal(t, 15, dic.Borrar(15))
-	require.Equal(t, 4, dic.Cantidad())
-}
-
-func TestBorrarNodo2HijosSucesorProfundo(t *testing.T) {
-	dic := TDADiccionario.CrearABB[int, int](func(a, b int) int { return a - b })
-
-	dic.Guardar(10, 10)
-	dic.Guardar(5, 5)
-	dic.Guardar(15, 15)
-	dic.Guardar(20, 20)
-	dic.Guardar(19, 19)
-	dic.Guardar(18, 18)
-	dic.Guardar(17, 17)
-	dic.Guardar(16, 16)
-
-	require.Equal(t, 15, dic.Borrar(15))
-	require.Equal(t, 7, dic.Cantidad())
-}
-
-func TestBorrarNodo2HijosSucesorProfundoConHijo(t *testing.T) {
-	dic := TDADiccionario.CrearABB[int, int](func(a, b int) int { return a - b })
-
-	dic.Guardar(10, 10)
-	dic.Guardar(5, 5)
-	dic.Guardar(15, 15)
-	dic.Guardar(20, 20)
-	dic.Guardar(19, 19)
-	dic.Guardar(18, 18)
-	dic.Guardar(16, 16)
-	dic.Guardar(17, 17)
-
-	require.Equal(t, 15, dic.Borrar(15))
-	require.Equal(t, 7, dic.Cantidad())
-}
+// CREAR
 
 func TestDiccionarioOrdenadoVacio(t *testing.T) {
-	t.Log("Comprueba que DiccionarioOrdenado vacío no tiene claves")
+	t.Log("Un diccionario ordenado vacío no tiene claves")
 	dic := TDADiccionario.CrearABB[string, string](strings.Compare)
 	require.EqualValues(t, 0, dic.Cantidad())
 	require.False(t, dic.Pertenece("A"))
@@ -77,7 +25,7 @@ func TestDiccionarioOrdenadoVacio(t *testing.T) {
 }
 
 func TestDiccionarioOrdenadoClaveDefault(t *testing.T) {
-	t.Log("Prueba sobre un ABB vacío que si buscamos la clave default del tipo, no existe")
+	t.Log("Un diccionario ordenado vacío, por default, no se guarda con claves")
 	dicStr := TDADiccionario.CrearABB[string, string](strings.Compare)
 	require.False(t, dicStr.Pertenece(""))
 	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { dicStr.Obtener("") })
@@ -90,8 +38,10 @@ func TestDiccionarioOrdenadoClaveDefault(t *testing.T) {
 	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { dicInt.Borrar(0) })
 }
 
+// GUARDAR
+
 func TestDiccionarioOrdenadoUnElemento(t *testing.T) {
-	t.Log("Comprueba que DiccionarioOrdenado con un elemento tiene esa Clave")
+	t.Log("Se puede guardar, al menos, una clave correctamente")
 	dic := TDADiccionario.CrearABB[string, int](strings.Compare)
 	dic.Guardar("A", 10)
 	require.EqualValues(t, 1, dic.Cantidad())
@@ -102,7 +52,7 @@ func TestDiccionarioOrdenadoUnElemento(t *testing.T) {
 }
 
 func TestDiccionarioOrdenadoGuardar(t *testing.T) {
-	t.Log("Guarda elementos y verifica comportamiento")
+	t.Log("Se puede guardar más de una clave, correctamente")
 	claves := []string{"Gato", "Perro", "Vaca"}
 	valores := []string{"miau", "guau", "moo"}
 
@@ -128,7 +78,7 @@ func TestDiccionarioOrdenadoGuardar(t *testing.T) {
 }
 
 func TestDiccionarioOrdenadoReemplazoDato(t *testing.T) {
-	t.Log("Reemplaza datos en claves existentes")
+	t.Log("Se puede reemplazar el dato de una clave ya existente")
 	dic := TDADiccionario.CrearABB[string, string](strings.Compare)
 	clave := "Gato"
 	dic.Guardar(clave, "miau")
@@ -138,8 +88,28 @@ func TestDiccionarioOrdenadoReemplazoDato(t *testing.T) {
 	require.EqualValues(t, "miu", dic.Obtener(clave))
 }
 
+func TestDiccionarioOrdenadoClaveVacia(t *testing.T) {
+	t.Log("Se pueden guardar una clave y un valor vacíos")
+	dic := TDADiccionario.CrearABB[string, string](strings.Compare)
+	dic.Guardar("", "")
+	require.True(t, dic.Pertenece(""))
+	require.EqualValues(t, 1, dic.Cantidad())
+	require.EqualValues(t, "", dic.Obtener(""))
+}
+
+func TestDiccionarioOrdenadoValorNulo(t *testing.T) {
+	t.Log("nil es un valor válido para guardar")
+	dic := TDADiccionario.CrearABB[string, *int](strings.Compare)
+	dic.Guardar("Pez", nil)
+	require.True(t, dic.Pertenece("Pez"))
+	require.EqualValues(t, 1, dic.Cantidad())
+	require.Nil(t, dic.Obtener("Pez"))
+}
+
+// BORRAR
+
 func TestDiccionarioOrdenadoBorrar(t *testing.T) {
-	t.Log("Borra elementos y verifica comportamiento")
+	t.Log("Se puede borrar más de un valor, correctamente")
 	claves := []string{"Gato", "Perro", "Vaca"}
 	valores := []string{"miau", "guau", "moo"}
 	dic := TDADiccionario.CrearABB[string, string](strings.Compare)
@@ -163,19 +133,167 @@ func TestDiccionarioOrdenadoBorrar(t *testing.T) {
 	require.EqualValues(t, 0, dic.Cantidad())
 }
 
-func TestDiccionarioOrdenadoReutlizacionDeBorrados(t *testing.T) {
-	t.Log("Reutiliza una clave borrada")
-	dic := TDADiccionario.CrearABB[string, string](strings.Compare)
-	clave := "hola"
-	dic.Guardar(clave, "mundo!")
-	dic.Borrar(clave)
-	dic.Guardar(clave, "mundooo!")
-	require.True(t, dic.Pertenece(clave))
-	require.EqualValues(t, "mundooo!", dic.Obtener(clave))
+func TestBorrarRaizSinHijos(t *testing.T) {
+	t.Log("Al borrar una raíz sin hijos, el diccionario ordenado queda vacío")
+	dic := TDADiccionario.CrearABB[int, int](func(a, b int) int { return a - b })
+
+	dic.Guardar(10, 10)
+
+	require.Equal(t, 10, dic.Borrar(10))
+	require.Equal(t, 0, dic.Cantidad())
+	require.False(t, dic.Pertenece(10))
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { dic.Obtener(10) })
 }
 
+func TestBorrarNodoSinHijos(t *testing.T) {
+	t.Log("Al borrar un nodo sin hijos, su padre, se queda sin ése hijo")
+	dic := TDADiccionario.CrearABB[int, int](func(a, b int) int { return a - b })
+
+	dic.Guardar(10, 10)
+	dic.Guardar(5, 5)
+
+	require.Equal(t, 5, dic.Borrar(5))
+	require.Equal(t, 1, dic.Cantidad())
+	require.True(t, dic.Pertenece(10))
+	require.False(t, dic.Pertenece(5))
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { dic.Obtener(5) })
+}
+
+func TestBorrarRaizConHijoIzquierdo(t *testing.T) {
+	t.Log("Al borrar una raíz con hijo izquierdo, éste pasa a ser la raíz")
+	dic := TDADiccionario.CrearABB[int, int](func(a, b int) int { return a - b })
+
+	dic.Guardar(10, 10)
+	dic.Guardar(5, 5)
+
+	require.Equal(t, 10, dic.Borrar(10))
+	require.Equal(t, 1, dic.Cantidad())
+	require.True(t, dic.Pertenece(5))
+	require.False(t, dic.Pertenece(10))
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { dic.Obtener(10) })
+}
+
+func TestBorrarNodoConHijoIzquierdo(t *testing.T) {
+	t.Log("Al borrar un nodo con hijo izquierdo, su padre se queda con el nieto")
+	dic := TDADiccionario.CrearABB[int, int](func(a, b int) int { return a - b })
+
+	dic.Guardar(10, 10)
+	dic.Guardar(5, 5)
+	dic.Guardar(3, 3)
+
+	require.Equal(t, 5, dic.Borrar(5))
+	require.Equal(t, 2, dic.Cantidad())
+	require.True(t, dic.Pertenece(10))
+	require.True(t, dic.Pertenece(3))
+	require.False(t, dic.Pertenece(5))
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { dic.Obtener(5) })
+}
+
+func TestBorrarRaizConHijoDerecho(t *testing.T) {
+	t.Log("Al borrar una raíz con hijo derecho, éste pasa a ser la raíz")
+	dic := TDADiccionario.CrearABB[int, int](func(a, b int) int { return a - b })
+
+	dic.Guardar(10, 10)
+	dic.Guardar(20, 20)
+
+	require.Equal(t, 10, dic.Borrar(10))
+	require.Equal(t, 1, dic.Cantidad())
+	require.True(t, dic.Pertenece(20))
+	require.False(t, dic.Pertenece(10))
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { dic.Obtener(10) })
+}
+
+func TestBorrarNodoConHijoDerecho(t *testing.T) {
+	t.Log("Al borrar un nodo con hijo derecho, su padre se queda con el nieto")
+	dic := TDADiccionario.CrearABB[int, int](func(a, b int) int { return a - b })
+
+	dic.Guardar(10, 10)
+	dic.Guardar(20, 20)
+	dic.Guardar(25, 25)
+
+	require.Equal(t, 20, dic.Borrar(20))
+	require.Equal(t, 2, dic.Cantidad())
+	require.True(t, dic.Pertenece(10))
+	require.True(t, dic.Pertenece(25))
+	require.False(t, dic.Pertenece(20))
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { dic.Obtener(20) })
+}
+
+func TestBorraRaizDosHijos(t *testing.T) {
+	t.Log("Al borrar una raíz con dos hijos, uno de los dos la reemplaza")
+	dic := TDADiccionario.CrearABB[int, int](func(a, b int) int { return a - b })
+
+	dic.Guardar(10, 10)
+	dic.Guardar(5, 5)
+	dic.Guardar(15, 15)
+
+	require.Equal(t, 10, dic.Borrar(10))
+	require.Equal(t, 2, dic.Cantidad())
+	require.True(t, dic.Pertenece(5))
+	require.True(t, dic.Pertenece(15))
+	require.False(t, dic.Pertenece(10))
+}
+
+func TestBorraNodoDosHijos(t *testing.T) {
+	t.Log("Al borrar un nodo con dos hijos, uno de los dos lo reemplaza")
+	dic := TDADiccionario.CrearABB[int, int](func(a, b int) int { return a - b })
+
+	dic.Guardar(10, 10)
+	dic.Guardar(5, 5)
+	dic.Guardar(15, 15)
+	dic.Guardar(13, 13)
+	dic.Guardar(17, 17)
+
+	require.Equal(t, 15, dic.Borrar(15))
+	require.Equal(t, 4, dic.Cantidad())
+	require.True(t, dic.Pertenece(13))
+	require.True(t, dic.Pertenece(17))
+	require.False(t, dic.Pertenece(15))
+}
+
+func TestBorrarNodoDosHijosSucesorProfundo(t *testing.T) {
+	t.Log("Se puede borrar un nodo con dos hijos, cuyo reemplazo esté más oculto")
+	dic := TDADiccionario.CrearABB[int, int](func(a, b int) int { return a - b })
+
+	dic.Guardar(10, 10)
+	dic.Guardar(5, 5)
+	dic.Guardar(15, 15)
+	dic.Guardar(20, 20)
+	dic.Guardar(19, 19)
+	dic.Guardar(18, 18)
+	dic.Guardar(17, 17)
+	dic.Guardar(16, 16)
+
+	require.Equal(t, 15, dic.Borrar(15))
+	require.Equal(t, 7, dic.Cantidad())
+	require.True(t, dic.Pertenece(16))
+	require.True(t, dic.Pertenece(20))
+	require.False(t, dic.Pertenece(15))
+}
+
+func TestBorrarNodoDosHijosSucesorProfundoConHijo(t *testing.T) {
+	t.Log("Se puede borrar un nodo con dos hijos, de reemplazo oculto, sin que afecte a su hijo")
+	dic := TDADiccionario.CrearABB[int, int](func(a, b int) int { return a - b })
+
+	dic.Guardar(10, 10)
+	dic.Guardar(5, 5)
+	dic.Guardar(15, 15)
+	dic.Guardar(20, 20)
+	dic.Guardar(19, 19)
+	dic.Guardar(18, 18)
+	dic.Guardar(16, 16)
+	dic.Guardar(17, 17)
+
+	require.Equal(t, 15, dic.Borrar(15))
+	require.Equal(t, 7, dic.Cantidad())
+	require.True(t, dic.Pertenece(16))
+	require.True(t, dic.Pertenece(17))
+	require.False(t, dic.Pertenece(15))
+}
+
+// GUARDAR Y BORRAR
+
 func TestDiccionarioOrdenadoConClavesNumericas(t *testing.T) {
-	t.Log("Valida claves numéricas")
 	cmp := func(a, b int) int { return a - b }
 	dic := TDADiccionario.CrearABB[int, string](cmp)
 	clave := 10
@@ -224,20 +342,14 @@ func TestDiccionarioOrdenadoConClavesStructs(t *testing.T) {
 	require.False(t, dic.Pertenece(a1))
 }
 
-func TestDiccionarioOrdenadoClaveVacia(t *testing.T) {
+func TestDiccionarioOrdenadoReutlizacionDeBorrados(t *testing.T) {
 	dic := TDADiccionario.CrearABB[string, string](strings.Compare)
-	dic.Guardar("", "")
-	require.True(t, dic.Pertenece(""))
-	require.EqualValues(t, 1, dic.Cantidad())
-	require.EqualValues(t, "", dic.Obtener(""))
-}
-
-func TestDiccionarioOrdenadoValorNulo(t *testing.T) {
-	dic := TDADiccionario.CrearABB[string, *int](strings.Compare)
-	dic.Guardar("Pez", nil)
-	require.True(t, dic.Pertenece("Pez"))
-	require.EqualValues(t, 1, dic.Cantidad())
-	require.Nil(t, dic.Obtener("Pez"))
+	clave := "hola"
+	dic.Guardar(clave, "mundo!")
+	dic.Borrar(clave)
+	dic.Guardar(clave, "mundooo!")
+	require.True(t, dic.Pertenece(clave))
+	require.EqualValues(t, "mundooo!", dic.Obtener(clave))
 }
 
 func TestDiccionarioOrdenadoGuardarYBorrarRepetidasVeces(t *testing.T) {
@@ -250,7 +362,7 @@ func TestDiccionarioOrdenadoGuardarYBorrarRepetidasVeces(t *testing.T) {
 	require.EqualValues(t, 0, dic.Cantidad())
 }
 
-// TESTS DEL ITERADOR INTERNO
+// ITERADOR INTERNO
 
 func TestDiccionarioOrdenadoIteradorInternoClaves(t *testing.T) {
 	claves := []string{"Gato", "Perro", "Vaca"}
@@ -458,7 +570,7 @@ func TestIteradorInternoRangoConCorte(t *testing.T) {
 		return suma < 30 // Corta cuando la suma alcanza o supera 30
 	})
 
-	require.Less(t, suma, 30+7) // La suma debe ser menor a 30+último elemento procesado
+	require.Equal(t, suma, 34) // 5+7+10+12 = 34
 }
 
 func TestIteradorInternoRangoVacio(t *testing.T) {
@@ -505,7 +617,9 @@ func TestIteradorInternoRangoUnicoElemento(t *testing.T) {
 	require.Equal(t, []string{"A"}, resultado)
 }
 
-// TESTS DEL ITERADOR EXTERNO
+// --------------------------------------------------------------------
+// -------------------- TESTS DEL ITERADOR EXTERNO --------------------
+// --------------------------------------------------------------------
 
 func TestDiccionarioOrdenadoIterarVacio(t *testing.T) {
 	dic := TDADiccionario.CrearABB[string, int](strings.Compare)

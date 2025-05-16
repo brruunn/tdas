@@ -39,33 +39,56 @@ func crearNodoABB[K comparable, V any](clave K, dato V) *nodoABB[K, V] {
 // -------------------------------------------------------------------------------------
 
 func (a *abb[K, V]) Guardar(clave K, dato V) {
-	nodo := a.raiz.abbBuscarNodo(clave, a.cmp)
-	if nodo != nil {
-		nodo.dato = dato
-		return
+	_, nodo := a.abbBuscar(clave, nil, &a.raiz)
+	if *nodo != nil {
+		(*nodo).dato = dato
+	} else {
+		*nodo = crearNodoABB(clave, dato)
+		a.cantidad++
 	}
-	a.guardar(&a.raiz, clave, dato)
 }
 
 func (a *abb[K, V]) Pertenece(clave K) bool {
-	encontrado, _ := a.raiz.abbBuscar(clave, a.cmp)
-	return encontrado
+	_, nodo := a.abbBuscar(clave, nil, &a.raiz)
+	return *nodo != nil
 }
 
 func (a *abb[K, V]) Obtener(clave K) V {
-	encontrado, dato := a.raiz.abbBuscar(clave, a.cmp)
-	if encontrado {
-		return dato
+	_, nodo := a.abbBuscar(clave, nil, &a.raiz)
+	if *nodo != nil {
+		return (*nodo).dato
 	}
 	panic(_MENSAJE_PANIC_DICCIONARIO)
 }
 
 func (a *abb[K, V]) Borrar(clave K) V {
-	nodo := a.raiz.abbBuscarNodo(clave, a.cmp)
-	if nodo == nil {
-		panic(_MENSAJE_PANIC_DICCIONARIO)
+	padre, nodo := a.abbBuscar(clave, nil, &a.raiz)
+
+	if *nodo != nil {
+		dato := (*nodo).dato
+
+		if (*nodo).izq == nil && (*nodo).der == nil {
+			a.reemplazarNodo(padre, nodo, nil)
+
+		} else if (*nodo).izq != nil && (*nodo).der == nil {
+			a.reemplazarNodo(padre, nodo, (*nodo).izq)
+
+		} else if (*nodo).izq == nil && (*nodo).der != nil {
+			a.reemplazarNodo(padre, nodo, (*nodo).der)
+
+		} else {
+			sucesorPadre, sucesor := a.encontrarSucesor(nodo, &(*nodo).der)
+			(*nodo).clave = (*sucesor).clave
+			(*nodo).dato = (*sucesor).dato
+			a.reemplazarNodo(sucesorPadre, sucesor, (*sucesor).der)
+
+		}
+
+		a.cantidad--
+		return dato
 	}
-	return a.borrar(nil, &a.raiz, clave)
+
+	panic(_MENSAJE_PANIC_DICCIONARIO)
 }
 
 func (a *abb[K, V]) Cantidad() int {
