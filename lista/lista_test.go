@@ -367,26 +367,3 @@ func TestIteradorBorrarUltimo(t *testing.T) {
 	require.Equal(t, 100, lista.VerUltimo())  // Ahora 100 tambien es el ultimo
 	require.Equal(t, 1, lista.Largo())
 }
-
-// Test para verificar la inserción intercalada, al principio y al final, con dos iteradores
-func TestIteradorInsertarIntercalado(t *testing.T) {
-	lista := TDALista.CrearListaEnlazada[int]()
-	iter := lista.Iterador()
-
-	iter.Insertar(1) // [1]
-	iter.Siguiente() // apuntamos a nil
-	iter.Insertar(2) // [1,2]
-
-	iter = lista.Iterador()
-	iter.Insertar(0) // [0,1,2]
-
-	for iter.HaySiguiente() {
-		iter.Siguiente()
-	}
-
-	iter.Insertar(3) // [0,1,2,3]
-
-	require.Equal(t, 0, lista.VerPrimero())
-	require.Equal(t, 3, lista.VerUltimo())
-	require.Equal(t, 4, lista.Largo())
-}

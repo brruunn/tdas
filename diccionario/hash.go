@@ -32,7 +32,6 @@ const (
 	_FACTOR_REDIMENSION        = 2
 )
 
-// crearTabla inicializa una tabla de listas vacías con la capacidad dada
 func crearTabla[K comparable, V any](tam int) []listaPares[K, V] {
 	tabla := make([]listaPares[K, V], tam)
 	for i := range tabla {
