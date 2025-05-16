@@ -32,11 +32,17 @@ const (
 	_FACTOR_REDIMENSION        = 2
 )
 
-func CrearHash[K comparable, V any]() Diccionario[K, V] {
-	tabla := make([]listaPares[K, V], _TAM_INICIAL)
+// crearTabla inicializa una tabla de listas vacías con la capacidad dada
+func crearTabla[K comparable, V any](tam int) []listaPares[K, V] {
+	tabla := make([]listaPares[K, V], tam)
 	for i := range tabla {
 		tabla[i] = TDALista.CrearListaEnlazada[*parClaveValor[K, V]]()
 	}
+	return tabla
+}
+
+func CrearHash[K comparable, V any]() Diccionario[K, V] {
+	tabla := crearTabla[K, V](_TAM_INICIAL)
 	return &hashAbierto[K, V]{tabla: tabla, tam: _TAM_INICIAL}
 }
 

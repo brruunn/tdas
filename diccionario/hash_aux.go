@@ -2,7 +2,6 @@ package diccionario
 
 import (
 	"fmt"
-	TDALista "tdas/lista"
 )
 
 // -------------------- AUXILIARES HASHING --------------------
@@ -47,24 +46,21 @@ func (hash *hashAbierto[K, V]) hashBuscar(clave K, seBorraPar bool) (*parClaveVa
 	return nil, lista
 }
 
-func (hash *hashAbierto[K, V]) rehashear(nuevo_tam int) {
-	nuevaTabla := make([]listaPares[K, V], nuevo_tam)
-	for i := range nuevaTabla {
-		nuevaTabla[i] = TDALista.CrearListaEnlazada[*parClaveValor[K, V]]()
-	}
+func (hash *hashAbierto[K, V]) rehashear(nuevoTam int) {
+	nuevaTabla := crearTabla[K, V](nuevoTam)
 
 	for _, lista := range hash.tabla {
 		iter := lista.Iterador()
 		for iter.HaySiguiente() {
 			par := iter.VerActual()
-			pos := convertirAPosicion(par.clave, nuevo_tam)
+			pos := convertirAPosicion(par.clave, nuevoTam)
 			nuevaTabla[pos].InsertarUltimo(par)
 			iter.Siguiente()
 		}
 	}
 
 	hash.tabla = nuevaTabla
-	hash.tam = nuevo_tam
+	hash.tam = nuevoTam
 }
 
 // -------------------- AUXILIARES ITERADOR --------------------
