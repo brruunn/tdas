@@ -5,7 +5,7 @@ import (
 	TDALista "tdas/lista"
 )
 
-// Auxiliares de convertirAPosicion
+// -------------------- AUXILIARES HASHING --------------------
 
 func convertirABytes[K comparable](clave K) []byte {
 	return fmt.Appendf(nil, "%v", clave)
@@ -20,16 +20,14 @@ func hashingFNV(clave []byte, tam int) int {
 	return int(h % uint64(tam))
 }
 
-// Auxiliar de hashBuscar
-
 func convertirAPosicion[K comparable](clave K, tam int) int {
 	claveBytes := convertirABytes(clave)
 	return hashingFNV(claveBytes, tam)
 }
 
-// Auxiliar de Guardar, Pertenece, Obtener y Borrar
+// -------------------- AUXILIARES DICCIONARIO --------------------
 
-func (hash *hashAbierto[K, V]) hashBuscar(clave K, seBorraPar bool) (bool, V, TDALista.Lista[parClaveValor[K, V]]) {
+func (hash *hashAbierto[K, V]) hashBuscar(clave K, seBorraPar bool) (*parClaveValor[K, V], listaPares[K, V]) {
 	pos := convertirAPosicion(clave, hash.tam)
 	lista := hash.tabla[pos]
 
@@ -41,21 +39,18 @@ func (hash *hashAbierto[K, V]) hashBuscar(clave K, seBorraPar bool) (bool, V, TD
 				iter.Borrar()
 				hash.cantidad--
 			}
-			return true, par.dato, lista
+			return par, lista
 		}
 		iter.Siguiente()
 	}
 
-	var ningunDato V
-	return false, ningunDato, lista
+	return nil, lista
 }
 
-// Auxiliar de Guardar y Borrar
-
 func (hash *hashAbierto[K, V]) rehashear(nuevo_tam int) {
-	nuevaTabla := make([]TDALista.Lista[parClaveValor[K, V]], nuevo_tam)
+	nuevaTabla := make([]listaPares[K, V], nuevo_tam)
 	for i := range nuevaTabla {
-		nuevaTabla[i] = TDALista.CrearListaEnlazada[parClaveValor[K, V]]()
+		nuevaTabla[i] = TDALista.CrearListaEnlazada[*parClaveValor[K, V]]()
 	}
 
 	for _, lista := range hash.tabla {
@@ -72,7 +67,7 @@ func (hash *hashAbierto[K, V]) rehashear(nuevo_tam int) {
 	hash.tam = nuevo_tam
 }
 
-// Auxiliar de Iterador y Siguiente
+// -------------------- AUXILIARES ITERADOR --------------------
 
 func (iter *iterHashAbierto[K, V]) buscarLista() {
 	for iter.HaySiguiente() {
