@@ -56,8 +56,11 @@ func TestInsertarIntercalado(t *testing.T) {
 	lista := TDALista.CrearListaEnlazada[int]()
 
 	for n := range 5 {
-		lista.InsertarPrimero(5 - n) // De la mitad para abajo
-		lista.InsertarUltimo(6 + n)  // De la mitad para arriba
+		lista.InsertarPrimero(5 - n)              // De la mitad para abajo
+		require.Equal(t, 5-n, lista.VerPrimero()) // 1 <- 2 <- 3 <- 4 <- 5
+
+		lista.InsertarUltimo(6 + n)              // De la mitad para arriba
+		require.Equal(t, 6+n, lista.VerUltimo()) // 6 -> 7 -> 8 -> 9 -> 10
 	}
 
 	require.Equal(t, 1, lista.VerPrimero())
