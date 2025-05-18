@@ -65,6 +65,13 @@ func TestInsertarIntercalado(t *testing.T) {
 
 	require.Equal(t, 1, lista.VerPrimero())
 	require.Equal(t, 10, lista.VerUltimo())
+
+	for n := range 10 {
+		require.Equal(t, n+1, lista.BorrarPrimero())
+	}
+
+	require.PanicsWithValue(t, _MENSAJE_PANIC_LISTA, func() { lista.VerPrimero() })
+	require.PanicsWithValue(t, _MENSAJE_PANIC_LISTA, func() { lista.VerUltimo() })
 }
 
 // Test para verificar el borrado del primer elemento
