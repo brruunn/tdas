@@ -355,15 +355,31 @@ func TestDiccionarioOrdenadoReutlizacionDeBorrados(t *testing.T) {
 func TestDiccionarioOrdenadoGuardarYBorrarRepetidasVeces(t *testing.T) {
 	cmp := func(a, b int) int { return a - b }
 	dic := TDADiccionario.CrearABB[int, int](cmp)
+
 	for i := 0; i < 1000; i++ {
 		dic.Guardar(i, i)
 		dic.Borrar(i)
 	}
+
 	require.EqualValues(t, 0, dic.Cantidad())
+
+	// verificar que el árbol mantiene el orden después de operaciones
+	dic.Guardar(5, 5)
+	dic.Guardar(3, 3)
+	dic.Guardar(7, 7)
+	dic.Guardar(2, 2)
+	dic.Guardar(4, 4)
+
+	var claves []int
+	dic.Iterar(func(clave int, valor int) bool {
+		claves = append(claves, clave)
+		return true
+	})
+
+	require.Equal(t, []int{2, 3, 4, 5, 7}, claves)
 }
 
 // ITERADOR INTERNO
-
 func TestDiccionarioOrdenadoIteradorInternoClaves(t *testing.T) {
 	claves := []string{"Gato", "Perro", "Vaca"}
 	dic := TDADiccionario.CrearABB[string, *int](strings.Compare)
@@ -371,18 +387,13 @@ func TestDiccionarioOrdenadoIteradorInternoClaves(t *testing.T) {
 		dic.Guardar(c, nil)
 	}
 
-	cs := make([]string, 3)
-	cantidad := 0
+	cs := make([]string, 0, 3)
 	dic.Iterar(func(clave string, dato *int) bool {
-		cs[cantidad] = clave
-		cantidad++
+		cs = append(cs, clave)
 		return true
 	})
 
-	require.EqualValues(t, 3, cantidad)
-	for _, c := range cs {
-		require.Contains(t, claves, c)
-	}
+	require.EqualValues(t, []string{"Gato", "Perro", "Vaca"}, cs)
 }
 
 func TestDiccionarioOrdenadoIteradorInternoValores(t *testing.T) {

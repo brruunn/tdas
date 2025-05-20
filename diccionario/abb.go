@@ -39,7 +39,7 @@ func crearNodoABB[K comparable, V any](clave K, dato V) *nodoABB[K, V] {
 // -------------------------------------------------------------------------------------
 
 func (a *abb[K, V]) Guardar(clave K, dato V) {
-	_, nodo := a.abbBuscar(clave, nil, &a.raiz)
+	nodo := a.abbBuscar(clave, &a.raiz)
 	if *nodo != nil {
 		(*nodo).dato = dato
 	} else {
@@ -49,12 +49,12 @@ func (a *abb[K, V]) Guardar(clave K, dato V) {
 }
 
 func (a *abb[K, V]) Pertenece(clave K) bool {
-	_, nodo := a.abbBuscar(clave, nil, &a.raiz)
+	nodo := a.abbBuscar(clave, &a.raiz)
 	return *nodo != nil
 }
 
 func (a *abb[K, V]) Obtener(clave K) V {
-	_, nodo := a.abbBuscar(clave, nil, &a.raiz)
+	nodo := a.abbBuscar(clave, &a.raiz)
 	if *nodo != nil {
 		return (*nodo).dato
 	}
@@ -62,33 +62,32 @@ func (a *abb[K, V]) Obtener(clave K) V {
 }
 
 func (a *abb[K, V]) Borrar(clave K) V {
-	padre, nodo := a.abbBuscar(clave, nil, &a.raiz)
+	nodo := a.abbBuscar(clave, &a.raiz)
 
-	if *nodo != nil {
-		dato := (*nodo).dato
-
-		if (*nodo).izq == nil && (*nodo).der == nil {
-			a.reemplazarNodo(padre, nodo, nil)
-
-		} else if (*nodo).izq != nil && (*nodo).der == nil {
-			a.reemplazarNodo(padre, nodo, (*nodo).izq)
-
-		} else if (*nodo).izq == nil && (*nodo).der != nil {
-			a.reemplazarNodo(padre, nodo, (*nodo).der)
-
-		} else {
-			sucesorPadre, sucesor := a.encontrarSucesor(nodo, &(*nodo).der)
-			(*nodo).clave = (*sucesor).clave
-			(*nodo).dato = (*sucesor).dato
-			a.reemplazarNodo(sucesorPadre, sucesor, (*sucesor).der)
-
-		}
-
-		a.cantidad--
-		return dato
+	if *nodo == nil {
+		panic(_MENSAJE_PANIC_DICCIONARIO)
 	}
 
-	panic(_MENSAJE_PANIC_DICCIONARIO)
+	dato := (*nodo).dato
+
+	if (*nodo).izq == nil && (*nodo).der == nil {
+		*nodo = nil
+
+	} else if (*nodo).izq != nil && (*nodo).der == nil {
+		*nodo = (*nodo).izq
+
+	} else if (*nodo).izq == nil && (*nodo).der != nil {
+		*nodo = (*nodo).der
+
+	} else {
+		sucesor := a.buscarMinimo(&(*nodo).der)
+		(*nodo).clave = (*sucesor).clave
+		(*nodo).dato = (*sucesor).dato
+		a.eliminarMinimo(&(*nodo).der)
+	}
+
+	a.cantidad--
+	return dato
 }
 
 func (a *abb[K, V]) Cantidad() int {

@@ -2,38 +2,36 @@ package diccionario
 
 // Función recursiva auxiliar de Guardar, Pertenece, Obtener y Borrar
 
-func (a *abb[K, V]) abbBuscar(clave K, anterior, actual **nodoABB[K, V]) (padre, nodo **nodoABB[K, V]) {
+func (a *abb[K, V]) abbBuscar(clave K, actual **nodoABB[K, V]) **nodoABB[K, V] {
 	if *actual == nil {
-		return anterior, actual
+		return actual
 	}
 
 	comparacion := a.cmp(clave, (*actual).clave)
 	if comparacion == 0 {
-		return anterior, actual
+		return actual
 	}
 	if comparacion < 0 {
-		return a.abbBuscar(clave, actual, &(*actual).izq)
+		return a.abbBuscar(clave, &(*actual).izq)
 	}
-	return a.abbBuscar(clave, actual, &(*actual).der)
+	return a.abbBuscar(clave, &(*actual).der)
 }
 
 // Funciones auxiliares de Borrar
 
-func (a *abb[K, V]) reemplazarNodo(padre, nodo **nodoABB[K, V], reemplazo *nodoABB[K, V]) {
-	if padre == nil {
-		a.raiz = reemplazo
-	} else if (*padre).izq == *nodo {
-		(*padre).izq = reemplazo
-	} else {
-		(*padre).der = reemplazo
+func (a *abb[K, V]) buscarMinimo(actual **nodoABB[K, V]) **nodoABB[K, V] {
+	if (*actual).izq == nil {
+		return actual
 	}
+	return a.buscarMinimo(&(*actual).izq)
 }
 
-func (a *abb[K, V]) encontrarSucesor(anterior, actual **nodoABB[K, V]) (sucesorPadre, sucesor **nodoABB[K, V]) {
+func (a *abb[K, V]) eliminarMinimo(actual **nodoABB[K, V]) {
 	if (*actual).izq == nil {
-		return anterior, actual
+		*actual = (*actual).der
+		return
 	}
-	return a.encontrarSucesor(actual, &(*actual).izq)
+	a.eliminarMinimo(&(*actual).izq)
 }
 
 // Función recursiva de Iterar e IterarRango
