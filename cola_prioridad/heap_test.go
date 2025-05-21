@@ -1,6 +1,7 @@
 package cola_prioridad_test
 
 import (
+	"strings"
 	"testing"
 
 	TDAColaPrioridad "tdas/cola_prioridad"
@@ -18,20 +19,32 @@ func TestHeapVacio(t *testing.T) {
 }
 
 func TestEncolarYDesencolar(t *testing.T) {
-	t.Log("Encolar algunos elementos y verificar el máximo en cada paso")
+	t.Log("Encolar y desencolar algunos elementos, y verificar el máximo en cada paso")
 	heap := TDAColaPrioridad.CrearHeap(func(a, b int) int { return a - b })
 
 	heap.Encolar(5)
 	require.Equal(t, 5, heap.VerMax())
+	require.Equal(t, 1, heap.Cantidad())
 
 	heap.Encolar(10)
 	require.Equal(t, 10, heap.VerMax())
+	require.Equal(t, 2, heap.Cantidad())
 
 	heap.Encolar(3)
 	require.Equal(t, 10, heap.VerMax())
+	require.Equal(t, 3, heap.Cantidad())
 
 	require.Equal(t, 10, heap.Desencolar())
 	require.Equal(t, 5, heap.VerMax())
+	require.Equal(t, 2, heap.Cantidad())
+
+	require.Equal(t, 5, heap.Desencolar())
+	require.Equal(t, 3, heap.VerMax())
+	require.Equal(t, 1, heap.Cantidad())
+
+	require.Equal(t, 3, heap.Desencolar())
+	require.Equal(t, 0, heap.Cantidad())
+	require.True(t, heap.EstaVacia())
 }
 
 func TestEncolarDesencolarAlternado(t *testing.T) {
@@ -64,6 +77,11 @@ func TestEncolarDesencolarAlternado(t *testing.T) {
 	require.Equal(t, 3, heap.VerMax())
 	require.Equal(t, 3, heap.Desencolar())
 	require.True(t, heap.EstaVacia())
+
+	for i := range 10 {
+		heap.Encolar(i)
+		require.Equal(t, heap.VerMax(), heap.Desencolar())
+	}
 }
 
 func TestHeapDesdeArreglo(t *testing.T) {
@@ -72,9 +90,10 @@ func TestHeapDesdeArreglo(t *testing.T) {
 	heap := TDAColaPrioridad.CrearHeapArr(arr, func(a, b int) int { return a - b })
 
 	require.Equal(t, 20, heap.VerMax())
+	require.Equal(t, len(arr), heap.Cantidad())
 	require.Equal(t, 20, heap.Desencolar())
 	require.Equal(t, 15, heap.VerMax())
-	require.Equal(t, 4, heap.Cantidad())
+	require.Equal(t, len(arr)-1, heap.Cantidad())
 }
 
 func TestPruebaDeVolumen(t *testing.T) {
@@ -105,7 +124,7 @@ func TestHeapSort(t *testing.T) {
 	require.Equal(t, esperado, elementos)
 }
 
-func TestStrings(t *testing.T) {
+func TestStringsPorLargo(t *testing.T) {
 	t.Log("Heap con strings ordenado por longitud")
 	heap := TDAColaPrioridad.CrearHeap(func(a, b string) int { return len(a) - len(b) })
 
@@ -116,6 +135,28 @@ func TestStrings(t *testing.T) {
 	require.Equal(t, "abc", heap.VerMax())
 	require.Equal(t, "abc", heap.Desencolar())
 	require.Equal(t, "ab", heap.VerMax())
+}
+
+func TestStringsCompare(t *testing.T) {
+	t.Log("Heap con strings ordenado por criterio lexicografico")
+	heap := TDAColaPrioridad.CrearHeap(strings.Compare)
+
+	heap.Encolar("Elefante")
+	heap.Encolar("Abeja")
+	heap.Encolar("Burro")
+	heap.Encolar("Aguila")
+	require.Equal(t, "Elefante", heap.Desencolar())
+	require.Equal(t, "Burro", heap.Desencolar())
+	require.Equal(t, "Aguila", heap.VerMax())
+
+	heap.Encolar("Dromedario")
+	heap.Encolar("Gato")
+	heap.Encolar("Orangutan")
+	require.Equal(t, "Orangutan", heap.Desencolar())
+	require.Equal(t, "Gato", heap.Desencolar())
+
+	require.Equal(t, "Dromedario", heap.Desencolar())
+	require.Equal(t, "Aguila", heap.VerMax())
 }
 
 func TestStructs(t *testing.T) {
@@ -134,6 +175,7 @@ func TestStructs(t *testing.T) {
 	require.Equal(t, 40, heap.VerMax().edad)
 	require.Equal(t, "Pedro", heap.Desencolar().nombre)
 	require.Equal(t, 30, heap.VerMax().edad)
+	require.Equal(t, "Juan", heap.VerMax().nombre)
 }
 
 func TestHeapConElementosIguales(t *testing.T) {
@@ -147,6 +189,7 @@ func TestHeapConElementosIguales(t *testing.T) {
 	require.Equal(t, 3, heap.Cantidad())
 	require.Equal(t, 5, heap.Desencolar())
 	require.Equal(t, 5, heap.Desencolar())
+	require.Equal(t, 1, heap.Cantidad())
 }
 
 func TestPanics(t *testing.T) {
