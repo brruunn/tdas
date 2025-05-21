@@ -10,7 +10,7 @@ import (
 
 func TestHeapVacio(t *testing.T) {
 	t.Log("Comprueba que el heap vacio no tiene elementos")
-	heap := TDAColaPrioridad.CrearHeap[int](func(a, b int) int { return a - b })
+	heap := TDAColaPrioridad.CrearHeap(func(a, b int) int { return a - b })
 	require.True(t, heap.EstaVacia())
 	require.Equal(t, 0, heap.Cantidad())
 	require.PanicsWithValue(t, "La cola esta vacia", func() { heap.VerMax() })
@@ -19,7 +19,7 @@ func TestHeapVacio(t *testing.T) {
 
 func TestEncolarYDesencolar(t *testing.T) {
 	t.Log("Encolar algunos elementos y verificar el máximo en cada paso")
-	heap := TDAColaPrioridad.CrearHeap[int](func(a, b int) int { return a - b })
+	heap := TDAColaPrioridad.CrearHeap(func(a, b int) int { return a - b })
 
 	heap.Encolar(5)
 	require.Equal(t, 5, heap.VerMax())
@@ -36,7 +36,7 @@ func TestEncolarYDesencolar(t *testing.T) {
 
 func TestEncolarDesencolarAlternado(t *testing.T) {
 	t.Log("Encolar y desencolar alternadamente, verificando el maximo en cada paso")
-	heap := TDAColaPrioridad.CrearHeap[int](func(a, b int) int { return a - b })
+	heap := TDAColaPrioridad.CrearHeap(func(a, b int) int { return a - b })
 
 	heap.Encolar(10)
 	require.Equal(t, 10, heap.VerMax())
@@ -79,7 +79,7 @@ func TestHeapDesdeArreglo(t *testing.T) {
 
 func TestPruebaDeVolumen(t *testing.T) {
 	t.Log("Prueba de volumen con muchos elementos")
-	heap := TDAColaPrioridad.CrearHeap[int](func(a, b int) int { return a - b })
+	heap := TDAColaPrioridad.CrearHeap(func(a, b int) int { return a - b })
 	n := 10000
 
 	for i := 0; i < n; i++ {
@@ -107,7 +107,7 @@ func TestHeapSort(t *testing.T) {
 
 func TestStrings(t *testing.T) {
 	t.Log("Heap con strings ordenado por longitud")
-	heap := TDAColaPrioridad.CrearHeap[string](func(a, b string) int { return len(a) - len(b) })
+	heap := TDAColaPrioridad.CrearHeap(func(a, b string) int { return len(a) - len(b) })
 
 	heap.Encolar("a")
 	heap.Encolar("abc")
@@ -125,7 +125,7 @@ func TestStructs(t *testing.T) {
 		edad   int
 	}
 
-	heap := TDAColaPrioridad.CrearHeap[persona](func(a, b persona) int { return a.edad - b.edad })
+	heap := TDAColaPrioridad.CrearHeap(func(a, b persona) int { return a.edad - b.edad })
 
 	heap.Encolar(persona{"Juan", 30})
 	heap.Encolar(persona{"Ana", 25})
@@ -138,7 +138,7 @@ func TestStructs(t *testing.T) {
 
 func TestHeapConElementosIguales(t *testing.T) {
 	t.Log("Heap con elementos de igual prioridad")
-	heap := TDAColaPrioridad.CrearHeap[int](func(a, b int) int { return 0 }) // Todos iguales
+	heap := TDAColaPrioridad.CrearHeap(func(a, b int) int { return 0 }) // Todos iguales
 
 	heap.Encolar(5)
 	heap.Encolar(5)
@@ -151,7 +151,7 @@ func TestHeapConElementosIguales(t *testing.T) {
 
 func TestPanics(t *testing.T) {
 	t.Log("Verificar que panic funciona correctamente")
-	heap := TDAColaPrioridad.CrearHeap[int](func(a, b int) int { return a - b })
+	heap := TDAColaPrioridad.CrearHeap(func(a, b int) int { return a - b })
 
 	require.PanicsWithValue(t, "La cola esta vacia", func() { heap.VerMax() })
 	require.PanicsWithValue(t, "La cola esta vacia", func() { heap.Desencolar() })

@@ -1,14 +1,5 @@
 package cola_prioridad
 
-const (
-	_MENSAJE_PANIC_HEAP    = "La cola esta vacia"
-	_CAP_INICIAL_HEAP      = 2
-	_FACT_REDIMENSION_HEAP = 2
-	_COND_REDUCCION_HEAP   = 4
-)
-
-type cmp[K comparable] func(c1, c2 K) int
-
 type colaConPrioridad[T any] struct {
 	datos []T
 	cant  int
@@ -38,16 +29,6 @@ func HeapSort[T any](elementos []T, funcion_cmp func(T, T) int) {
 	// ...
 }
 
-func redimensionar[T any](datos []T) []T {
-	nuevaCap := cap(datos) * _FACT_REDIMENSION_HEAP
-	if nuevaCap == 0 {
-		nuevaCap = _CAP_INICIAL_HEAP
-	}
-	nuevo := make([]T, len(datos), nuevaCap)
-	copy(nuevo, datos)
-	return nuevo
-}
-
 // ------------------------------------------
 // Métodos internos (privados)
 // ------------------------------------------
@@ -70,10 +51,6 @@ func (h *colaConPrioridad[T]) downheap(indice int) {
 func swap[T any](datos []T, i, j int) {
 	datos[i], datos[j] = datos[j], datos[i]
 }
-
-// ------------------------------------------
-// Implementación de las primitivas del heap
-// ------------------------------------------
 
 func (h *colaConPrioridad[T]) EstaVacia() bool {
 	return len(h.datos) == 0
