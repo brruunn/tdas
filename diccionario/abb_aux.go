@@ -17,21 +17,13 @@ func (a *abb[K, V]) abbBuscar(clave K, actual **nodoABB[K, V]) **nodoABB[K, V] {
 	return a.abbBuscar(clave, &(*actual).der)
 }
 
-// Funciones auxiliares de Borrar
+// Función auxiliar de Borrar
 
 func (a *abb[K, V]) buscarMinimo(actual **nodoABB[K, V]) **nodoABB[K, V] {
 	if (*actual).izq == nil {
 		return actual
 	}
 	return a.buscarMinimo(&(*actual).izq)
-}
-
-func (a *abb[K, V]) eliminarMinimo(actual **nodoABB[K, V]) {
-	if (*actual).izq == nil {
-		*actual = (*actual).der
-		return
-	}
-	a.eliminarMinimo(&(*actual).izq)
 }
 
 // Función recursiva de Iterar e IterarRango

@@ -70,20 +70,24 @@ func (a *abb[K, V]) Borrar(clave K) V {
 
 	dato := (*nodo).dato
 
-	if (*nodo).izq == nil && (*nodo).der == nil {
-		*nodo = nil
+	if (*nodo).izq != nil && (*nodo).der != nil {
+		sucesor := a.buscarMinimo(&(*nodo).der)
+		claveSucesor, datoSucesor := (*sucesor).clave, (*sucesor).dato
 
-	} else if (*nodo).izq != nil && (*nodo).der == nil {
+		a.Borrar(claveSucesor)
+		(*nodo).clave, (*nodo).dato = claveSucesor, datoSucesor
+
+		return dato
+
+	} else if (*nodo).izq != nil {
 		*nodo = (*nodo).izq
 
-	} else if (*nodo).izq == nil && (*nodo).der != nil {
+	} else if (*nodo).der != nil {
 		*nodo = (*nodo).der
 
 	} else {
-		sucesor := a.buscarMinimo(&(*nodo).der)
-		(*nodo).clave = (*sucesor).clave
-		(*nodo).dato = (*sucesor).dato
-		a.eliminarMinimo(&(*nodo).der)
+		*nodo = nil
+
 	}
 
 	a.cantidad--
