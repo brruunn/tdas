@@ -28,7 +28,7 @@ func CrearHeapArr[T any](arr []T, funcCmp func(T, T) int) ColaPrioridad[T] {
 	}
 	copy(h.datos, arr)
 
-	for i := h.cant/2 - 1; i >= 0; i-- {
+	for i := h.cant - 1; i >= 0; i-- {
 		h.downheap(i)
 	}
 
@@ -37,11 +37,9 @@ func CrearHeapArr[T any](arr []T, funcCmp func(T, T) int) ColaPrioridad[T] {
 
 func HeapSort[T any](elementos []T, funcCmp func(T, T) int) {
 	h := CrearHeapArr(elementos, funcCmp)
-	ultPos := len(elementos) - 1
-	for ultPos >= 0 {
+	for i := len(elementos) - 1; i >= 0; i-- {
 		max := h.Desencolar()
-		elementos[ultPos] = max
-		ultPos--
+		elementos[i] = max
 	}
 }
 
@@ -95,9 +93,7 @@ func (h *colaConPrioridad[T]) redimensionar(nuevaCap int) {
 	h.datos = nuevoArr
 }
 
-// -------------------------------------------------------------------------------------
 // -------------------- PRIMITIVAS DE LA COLA DE PRIORIDAD POR HEAP --------------------
-// -------------------------------------------------------------------------------------
 
 func (h *colaConPrioridad[T]) EstaVacia() bool {
 	return h.cant == 0
