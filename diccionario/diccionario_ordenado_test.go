@@ -2,6 +2,7 @@ package diccionario_test
 
 import (
 	"fmt"
+	"math/rand/v2"
 	"strings"
 	TDADiccionario "tdas/diccionario"
 	"testing"
@@ -379,6 +380,42 @@ func TestDiccionarioOrdenadoGuardarYBorrarRepetidasVeces(t *testing.T) {
 	require.Equal(t, []int{2, 3, 4, 5, 7}, claves)
 }
 
+// PRUEBA DE VOLUMEN
+func TestDiccionarioOrdenadoVolumen(t *testing.T) {
+	t.Log("Prueba de volumen con muchos elementos")
+	cmp := func(a, b int) int { return a - b }
+	dic := TDADiccionario.CrearABB[int, int](cmp)
+
+	// Insertar muchos elementos
+	for i := 0; i < 10000; i++ {
+		dic.Guardar(i, i*2)
+		require.True(t, dic.Pertenece(i))
+		require.EqualValues(t, i*2, dic.Obtener(i))
+	}
+
+	require.EqualValues(t, 10000, dic.Cantidad())
+
+	// Verificar que todos los elementos están presentes
+	for i := 0; i < 10000; i++ {
+		require.True(t, dic.Pertenece(i))
+		require.EqualValues(t, i*2, dic.Obtener(i))
+	}
+
+	// Borrar algunos elementos
+	for i := 0; i < 5000; i++ {
+		require.EqualValues(t, i*2, dic.Borrar(i))
+		require.False(t, dic.Pertenece(i))
+	}
+
+	require.EqualValues(t, 5000, dic.Cantidad())
+
+	// Verificar que los elementos restantes siguen ahí
+	for i := 5000; i < 10000; i++ {
+		require.True(t, dic.Pertenece(i))
+		require.EqualValues(t, i*2, dic.Obtener(i))
+	}
+}
+
 // ITERADOR INTERNO
 func TestDiccionarioOrdenadoIteradorInternoClaves(t *testing.T) {
 	claves := []string{"Gato", "Perro", "Vaca"}
@@ -394,6 +431,52 @@ func TestDiccionarioOrdenadoIteradorInternoClaves(t *testing.T) {
 	})
 
 	require.EqualValues(t, []string{"Gato", "Perro", "Vaca"}, cs)
+}
+
+func TestDiccionarioOrdenadoIteradorInternoVolumen(t *testing.T) {
+	t.Log("Prueba de volumen del iterador interno")
+	cmp := func(a, b int) int { return a - b }
+	dic := TDADiccionario.CrearABB[int, int](cmp)
+	cantidad := 10000
+
+	// Insertar elementos
+	for i := 0; i < cantidad; i++ {
+		dic.Guardar(i, i*2)
+	}
+
+	// Verificar iteración completa
+	contador := 0
+	ultimaClave := -1
+	dic.Iterar(func(clave int, valor int) bool {
+		require.Equal(t, contador, clave, "La clave no coincide con el orden esperado")
+		require.Equal(t, contador*2, valor, "El valor no coincide")
+		require.Greater(t, clave, ultimaClave, "Las claves no están en orden ascendente")
+		ultimaClave = clave
+		contador++
+		return true
+	})
+
+	require.Equal(t, cantidad, contador, "No se iteraron todos los elementos")
+	require.Equal(t, cantidad-1, ultimaClave, "La última clave no coincide")
+
+	// Borrar la mitad y volver a iterar
+	for i := 0; i < cantidad/2; i++ {
+		dic.Borrar(i)
+	}
+
+	contador = cantidad / 2
+	ultimaClave = cantidad/2 - 1
+	dic.Iterar(func(clave int, valor int) bool {
+		require.Equal(t, contador, clave, "Clave incorrecta después de borrados")
+		require.Equal(t, contador*2, valor, "Valor incorrecto después de borrados")
+		require.Greater(t, clave, ultimaClave, "Orden incorrecto después de borrados")
+		ultimaClave = clave
+		contador++
+		return true
+	})
+
+	require.Equal(t, cantidad, contador, "Cantidad incorrecta después de borrados")
+	require.Equal(t, cantidad-1, ultimaClave, "Última clave incorrecta después de borrados")
 }
 
 func TestDiccionarioOrdenadoIteradorInternoValores(t *testing.T) {
@@ -657,6 +740,82 @@ func TestDiccionarioOrdenadoIterar(t *testing.T) {
 	require.False(t, iter.HaySiguiente())
 }
 
+func TestDiccionarioOrdenadoIteradorExternoVolumen(t *testing.T) {
+	t.Log("Prueba de volumen del iterador externo")
+	cmp := func(a, b int) int { return a - b }
+	dic := TDADiccionario.CrearABB[int, int](cmp)
+	cantidad := 10000
+
+	// Insertar elementos
+	for i := 0; i < cantidad; i++ {
+		dic.Guardar(i, i*2)
+	}
+
+	// Verificar iteración completa
+	iter := dic.Iterador()
+	contador := 0
+	ultimaClave := -1
+	for iter.HaySiguiente() {
+		clave, valor := iter.VerActual()
+		require.Equal(t, contador, clave, "Clave en posición incorrecta")
+		require.Equal(t, contador*2, valor, "Valor en posición incorrecta")
+		require.Greater(t, clave, ultimaClave, "Las claves no están ordenadas")
+		ultimaClave = clave
+		contador++
+		iter.Siguiente()
+	}
+	require.Equal(t, cantidad, contador, "No se iteraron todos los elementos")
+	require.Equal(t, cantidad-1, ultimaClave, "Última clave incorrecta")
+
+	// Borrar la mitad y volver a iterar
+	for i := 0; i < cantidad/2; i++ {
+		dic.Borrar(i)
+	}
+
+	iter = dic.Iterador()
+	contador = cantidad / 2
+	ultimaClave = cantidad/2 - 1
+	for iter.HaySiguiente() {
+		clave, valor := iter.VerActual()
+		require.Equal(t, contador, clave, "Clave incorrecta después de borrado")
+		require.Equal(t, contador*2, valor, "Valor incorrecto después de borrado")
+		require.Greater(t, clave, ultimaClave, "Orden incorrecto después de borrado")
+		ultimaClave = clave
+		contador++
+		iter.Siguiente()
+	}
+	require.Equal(t, cantidad, contador, "Cantidad incorrecta después de borrado")
+	require.Equal(t, cantidad-1, ultimaClave, "Última clave incorrecta después de borrado")
+}
+
+func TestDiccionarioOrdenadoIteradorExternoOrden(t *testing.T) {
+	t.Log("Validar que el iterador externo recorre las claves en orden")
+	claves := []string{"Vaca", "Gato", "Perro", "Burrito", "Hamster"}
+	valores := []int{5, 2, 3, 1, 4}
+
+	dic := TDADiccionario.CrearABB[string, int](strings.Compare)
+	for i, clave := range claves {
+		dic.Guardar(clave, valores[i])
+	}
+
+	iter := dic.Iterador()
+	clavesOrdenadas := make([]string, 0, len(claves))
+	valoresOrdenados := make([]int, 0, len(valores))
+
+	for iter.HaySiguiente() {
+		clave, valor := iter.VerActual()
+		clavesOrdenadas = append(clavesOrdenadas, clave)
+		valoresOrdenados = append(valoresOrdenados, valor)
+		iter.Siguiente()
+	}
+
+	ordenEsperadoClaves := []string{"Burrito", "Gato", "Hamster", "Perro", "Vaca"}
+	ordenEsperadoValores := []int{1, 2, 4, 3, 5}
+
+	require.Equal(t, ordenEsperadoClaves, clavesOrdenadas, "Las claves no están en orden")
+	require.Equal(t, ordenEsperadoValores, valoresOrdenados, "Los valores no están en orden")
+}
+
 func TestDiccionarioOrdenadoIteradorNoLlegaAlFinal(t *testing.T) {
 	dic := TDADiccionario.CrearABB[string, string](strings.Compare)
 	claves := []string{"A", "B", "C"}
@@ -707,4 +866,95 @@ func TestDiccionarioOrdenadoPruebaIterarTrasBorrados(t *testing.T) {
 	require.EqualValues(t, "A", v1)
 	iter.Siguiente()
 	require.False(t, iter.HaySiguiente())
+}
+
+func BenchmarkDiccionarioOrdenado(b *testing.B) {
+	b.Log("Prueba de stress del Diccionario Ordenado (ABB). Prueba guardando distinta cantidad de elementos (muy grandes), " +
+		"ejecutando muchas veces las pruebas para generar un benchmark. Valida que la cantidad " +
+		"sea la adecuada. Luego validamos que podemos obtener y ver si pertenece cada una de las claves generadas, " +
+		"y que luego podemos borrar sin problemas")
+	for _, n := range TAMS_VOLUMEN {
+		b.Run(fmt.Sprintf("Prueba %d elementos", n), func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				ejecutarPruebaVolumen(b, n)
+			}
+		})
+	}
+}
+
+func ejecutarPruebasVolumenIteradorABB(b *testing.B, n int) {
+	cmp := func(a, b int) int { return a - b }
+	dic := TDADiccionario.CrearABB[int, *int](cmp)
+
+	claves := make([]int, n)
+	valores := make([]int, n)
+
+	// Generar claves en orden desordenado
+	for i := 0; i < n; i++ {
+		claves[i] = i
+	}
+	rand.Shuffle(n, func(i, j int) {
+		claves[i], claves[j] = claves[j], claves[i]
+	})
+
+	// Insertar en el ABB
+	for i := 0; i < n; i++ {
+		valores[i] = i
+		dic.Guardar(claves[i], &valores[i])
+	}
+
+	// Prueba de iteración ordenada
+	iter := dic.Iterador()
+	require.True(b, iter.HaySiguiente())
+
+	ok := true
+	var i int
+	var clave int
+	var valor *int
+	anterior := -1
+
+	for i = 0; i < n; i++ {
+		if !iter.HaySiguiente() {
+			ok = false
+			break
+		}
+		c1, v1 := iter.VerActual()
+		clave = c1
+
+		// Verificar orden ascendente
+		require.Greater(b, clave, anterior, "El iterador no está ordenando correctamente")
+		anterior = clave
+
+		valor = v1
+		if valor == nil {
+			ok = false
+			break
+		}
+		*valor = n // Modificar el valor
+		iter.Siguiente()
+	}
+	require.True(b, ok, "Iteración en volumen falló")
+	require.EqualValues(b, n, i, "No se iteraron todos los elementos")
+	require.False(b, iter.HaySiguiente(), "El iterador debe terminar")
+
+	// Verificar modificaciones
+	ok = true
+	for i = 0; i < n; i++ {
+		if valores[i] != n {
+			ok = false
+			break
+		}
+	}
+	require.True(b, ok, "No se actualizaron todos los valores")
+}
+
+func BenchmarkIteradorABB(b *testing.B) {
+	b.Log("Prueba de stress del Iterador del ABB")
+	for _, n := range TAMS_VOLUMEN {
+		b.Run(fmt.Sprintf("Prueba %d elementos", n), func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				ejecutarPruebasVolumenIteradorABB(b, n)
+			}
+		})
+	}
 }
