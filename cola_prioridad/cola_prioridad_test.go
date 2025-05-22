@@ -96,6 +96,28 @@ func TestHeapDesdeArreglo(t *testing.T) {
 	require.Equal(t, len(arr)-1, heap.Cantidad())
 }
 
+func TestHeapDesdeArregloVacio(t *testing.T) {
+	t.Log("Crear heap desde arreglo vacío y verificar propiedad del heap")
+	arr := []int{}
+	heap := TDAColaPrioridad.CrearHeapArr(arr, func(a, b int) int { return a - b })
+
+	heap.Encolar(5)
+	heap.Encolar(3)
+	require.Equal(t, 5, heap.VerMax())
+	require.Equal(t, 2, heap.Cantidad())
+
+	heap.Encolar(8)
+	heap.Encolar(15)
+	require.Equal(t, 15, heap.VerMax())
+	require.Equal(t, 4, heap.Cantidad())
+
+	heap.Desencolar()
+	heap.Desencolar()
+	require.Equal(t, 5, heap.VerMax())
+	heap.Encolar(20)
+	require.Equal(t, 20, heap.VerMax())
+}
+
 func TestPruebaDeVolumen(t *testing.T) {
 	t.Log("Prueba de volumen con muchos elementos")
 	heap := TDAColaPrioridad.CrearHeap(func(a, b int) int { return a - b })

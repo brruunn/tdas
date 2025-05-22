@@ -22,7 +22,7 @@ func CrearHeap[T any](funcCmp func(T, T) int) ColaPrioridad[T] {
 
 func CrearHeapArr[T any](arr []T, funcCmp func(T, T) int) ColaPrioridad[T] {
 	h := &colaConPrioridad[T]{
-		datos: make([]T, len(arr)),
+		datos: make([]T, len(arr)+_CAP_INICIAL),
 		cant:  len(arr),
 		cmp:   funcCmp,
 	}
