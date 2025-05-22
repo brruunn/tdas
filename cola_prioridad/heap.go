@@ -95,7 +95,7 @@ func HeapSort[T any](elementos []T, funcCmp func(T, T) int) {
 		slice := elementos[:largo]
 		largo--
 		swap(slice, 0, largo)
-		heapify(slice, largo, funcCmp)
+		downheap(slice, len(slice)-1, 0, funcCmp)
 	}
 }
 
