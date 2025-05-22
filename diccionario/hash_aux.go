@@ -26,7 +26,7 @@ func convertirAPosicion[K comparable](clave K, tam int) int {
 
 // -------------------- AUXILIARES DICCIONARIO --------------------
 
-func (hash *hashAbierto[K, V]) hashBuscar(clave K, seBorraPar bool) (*parClaveValor[K, V], listaPares[K, V]) {
+func (hash *hashAbierto[K, V]) hashBuscar(clave K) iterListaPares[K, V] {
 	pos := convertirAPosicion(clave, hash.tam)
 	lista := hash.tabla[pos]
 
@@ -34,16 +34,12 @@ func (hash *hashAbierto[K, V]) hashBuscar(clave K, seBorraPar bool) (*parClaveVa
 	for iter.HaySiguiente() {
 		par := iter.VerActual()
 		if par.clave == clave {
-			if seBorraPar {
-				iter.Borrar()
-				hash.cantidad--
-			}
-			return par, lista
+			return iter
 		}
 		iter.Siguiente()
 	}
 
-	return nil, lista
+	return iter
 }
 
 func (hash *hashAbierto[K, V]) rehashear(nuevoTam int) {

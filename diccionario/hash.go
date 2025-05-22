@@ -4,12 +4,15 @@ import (
 	TDALista "tdas/lista"
 )
 
+type (
+	listaPares[K comparable, V any]     TDALista.Lista[*parClaveValor[K, V]]
+	iterListaPares[K comparable, V any] TDALista.IteradorLista[*parClaveValor[K, V]]
+)
+
 type parClaveValor[K comparable, V any] struct {
 	clave K
 	dato  V
 }
-
-type listaPares[K comparable, V any] TDALista.Lista[*parClaveValor[K, V]]
 
 type hashAbierto[K comparable, V any] struct {
 	tabla    []listaPares[K, V]
@@ -20,7 +23,7 @@ type hashAbierto[K comparable, V any] struct {
 type iterHashAbierto[K comparable, V any] struct {
 	hash      *hashAbierto[K, V]
 	posActual int
-	actual    TDALista.IteradorLista[*parClaveValor[K, V]]
+	actual    iterListaPares[K, V]
 }
 
 const (
@@ -52,8 +55,18 @@ func crearPar[K comparable, V any](clave K, dato V) *parClaveValor[K, V] {
 // -------------------- PRIMITIVAS DEL DICCIONARIO --------------------
 
 func (hash *hashAbierto[K, V]) Guardar(clave K, dato V) {
-	_, lista := hash.hashBuscar(clave, true)
-	lista.InsertarUltimo(crearPar(clave, dato))
+	iter := hash.hashBuscar(clave)
+
+	if iter.HaySiguiente() {
+		iter.Borrar()
+		hash.cantidad--
+
+		for iter.HaySiguiente() {
+			iter.Siguiente()
+		}
+	}
+
+	iter.Insertar(crearPar(clave, dato))
 	hash.cantidad++
 
 	if float32(hash.cantidad)/float32(hash.tam) >= _MAX_FACTOR_DE_CARGA {
@@ -62,24 +75,28 @@ func (hash *hashAbierto[K, V]) Guardar(clave K, dato V) {
 }
 
 func (hash *hashAbierto[K, V]) Pertenece(clave K) bool {
-	par, _ := hash.hashBuscar(clave, false)
-	return par != nil
+	iter := hash.hashBuscar(clave)
+	return iter.HaySiguiente()
 }
 
 func (hash *hashAbierto[K, V]) Obtener(clave K) V {
-	par, _ := hash.hashBuscar(clave, false)
-	if par != nil {
-		return par.dato
+	iter := hash.hashBuscar(clave)
+	if iter.HaySiguiente() {
+		return iter.VerActual().dato
 	}
 	panic(_MENSAJE_PANIC_DICCIONARIO)
 }
 
 func (hash *hashAbierto[K, V]) Borrar(clave K) V {
-	par, _ := hash.hashBuscar(clave, true)
-	if par != nil {
+	iter := hash.hashBuscar(clave)
+	if iter.HaySiguiente() {
+		par := iter.Borrar()
+
+		hash.cantidad--
 		if float32(hash.cantidad)/float32(hash.tam) <= _MIN_FACTOR_DE_CARGA && hash.tam > _TAM_INICIAL {
 			hash.rehashear(hash.tam / _FACTOR_REDIMENSION)
 		}
+
 		return par.dato
 	}
 	panic(_MENSAJE_PANIC_DICCIONARIO)
