@@ -191,6 +191,8 @@ func TestHeapDesdeArreglo(t *testing.T) {
 	require.Equal(t, 20, heap.Desencolar())
 	require.Equal(t, 15, heap.VerMax())
 	require.Equal(t, len(arr)-1, heap.Cantidad())
+
+	require.Equal(t, []int{15, 3, 8, 20, 5}, arr) // El arreglo original no se vió modificado
 }
 
 func TestHeapSort(t *testing.T) {
@@ -339,7 +341,7 @@ func ejecutarPruebaVolumenHeapArr(b *testing.B, n int) {
 	/* Heap de mínimos */
 
 	cmpMin := func(a, b int) int { return b - a }
-	heapMin := TDAColaPrioridad.CrearHeapArr(arr, cmpMin)
+	heapMin := TDAColaPrioridad.CrearHeapArr(arr, cmpMin) // Como el arreglo original no cambia, podemos reutilizarlo
 
 	okMin := true
 	for range n {
@@ -395,8 +397,8 @@ func ejecutarPruebaVolumenHeapSort(b *testing.B, n int) {
 
 	okMinMay := true
 	for i := 1; i < len(arrMinMay); i++ {
-		if cmpMax(arrMinMay[i], arrMinMay[i-1]) < 0 { // Mi elemento debe ser mayor a su anterior
-			okMinMay = false
+		okMinMay = cmpMax(arrMinMay[i], arrMinMay[i-1]) > 0 // Mi elemento debe ser mayor a su anterior
+		if !okMinMay {
 			break
 		}
 	}
@@ -430,8 +432,8 @@ func ejecutarPruebaVolumenHeapSort(b *testing.B, n int) {
 
 	okMayMin := true
 	for i := 1; i < len(arrMayMin); i++ {
-		if cmpMax(arrMayMin[i], arrMayMin[i-1]) > 0 { // Mi elemento debe ser menor a su anterior
-			okMayMin = false
+		okMayMin = cmpMax(arrMayMin[i], arrMayMin[i-1]) < 0 // Mi elemento debe ser menor a su anterior
+		if !okMayMin {
 			break
 		}
 	}

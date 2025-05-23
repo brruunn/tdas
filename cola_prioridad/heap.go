@@ -7,10 +7,12 @@ const (
 	_COND_REDUCCION   = 4
 )
 
+type funcCmp[T any] func(T, T) int
+
 type colaConPrioridad[T any] struct {
 	datos []T
 	cant  int
-	cmp   func(T, T) int
+	cmp   funcCmp[T]
 }
 
 // -------------------- FUNCIONES AUXILIARES --------------------
@@ -30,22 +32,22 @@ func (h *colaConPrioridad[T]) upheap(pos int) {
 	}
 }
 
-func downheap[T any](arr []T, limite, pos int, funcCmp func(T, T) int) {
+func downheap[T any](arr []T, limite, pos int, cmp funcCmp[T]) {
 	for pos < limite {
 		hIzq, hDer := 2*pos+1, 2*pos+2
 
 		if hIzq < limite {
 			if hDer < limite {
-				if funcCmp(arr[pos], arr[hIzq]) >= 0 && funcCmp(arr[pos], arr[hDer]) >= 0 {
+				if cmp(arr[pos], arr[hIzq]) >= 0 && cmp(arr[pos], arr[hDer]) >= 0 {
 					return
 				}
-				if funcCmp(arr[hIzq], arr[hDer]) < 0 {
+				if cmp(arr[hIzq], arr[hDer]) < 0 {
 					swap(arr, pos, hDer)
 					pos = hDer
 					continue
 				}
 
-			} else if funcCmp(arr[pos], arr[hIzq]) >= 0 {
+			} else if cmp(arr[pos], arr[hIzq]) >= 0 {
 				return
 
 			}
@@ -65,37 +67,37 @@ func (h *colaConPrioridad[T]) redimensionar(nuevaCap int) {
 	h.datos = nuevoArr
 }
 
-func heapify[T any](arr []T, limite int, funcCmp func(T, T) int) {
+func heapify[T any](arr []T, limite int, cmp funcCmp[T]) {
 	for i := limite - 1; i >= 0; i-- {
-		downheap(arr, limite, i, funcCmp)
+		downheap(arr, limite, i, cmp)
 	}
 }
 
 // -------------------- FUNCIONES PARA EL USUARIO --------------------
 
-func CrearHeap[T any](funcCmp func(T, T) int) ColaPrioridad[T] {
-	return &colaConPrioridad[T]{datos: make([]T, _CAP_INICIAL), cmp: funcCmp}
+func CrearHeap[T any](cmp funcCmp[T]) ColaPrioridad[T] {
+	return &colaConPrioridad[T]{datos: make([]T, _CAP_INICIAL), cmp: cmp}
 }
 
-func CrearHeapArr[T any](arr []T, funcCmp func(T, T) int) ColaPrioridad[T] {
+func CrearHeapArr[T any](arr []T, cmp funcCmp[T]) ColaPrioridad[T] {
 	h := &colaConPrioridad[T]{
 		datos: make([]T, len(arr)+_CAP_INICIAL),
 		cant:  len(arr),
-		cmp:   funcCmp,
+		cmp:   cmp,
 	}
 	copy(h.datos, arr)
 	heapify(h.datos, h.cant, h.cmp)
 	return h
 }
 
-func HeapSort[T any](elementos []T, funcCmp func(T, T) int) {
+func HeapSort[T any](elementos []T, cmp funcCmp[T]) {
 	largo := len(elementos)
-	heapify(elementos, largo, funcCmp)
+	heapify(elementos, largo, cmp)
 	for largo > 1 {
 		slice := elementos[:largo]
 		largo--
 		swap(slice, 0, largo)
-		downheap(slice, len(slice)-1, 0, funcCmp)
+		downheap(slice, len(slice)-1, 0, cmp)
 	}
 }
 
