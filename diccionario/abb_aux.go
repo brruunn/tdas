@@ -17,7 +17,7 @@ func (a *abb[K, V]) abbBuscar(clave K, actual **nodoABB[K, V]) **nodoABB[K, V] {
 	return a.abbBuscar(clave, &(*actual).der)
 }
 
-// Función auxiliar de Borrar
+// Función recursiva auxiliar de Borrar
 
 func (a *abb[K, V]) buscarMinimo(actual **nodoABB[K, V]) **nodoABB[K, V] {
 	if (*actual).izq == nil {
