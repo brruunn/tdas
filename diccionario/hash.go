@@ -60,10 +60,6 @@ func (hash *hashAbierto[K, V]) Guardar(clave K, dato V) {
 	if iter.HaySiguiente() {
 		iter.Borrar()
 		hash.cantidad--
-
-		for iter.HaySiguiente() {
-			iter.Siguiente()
-		}
 	}
 
 	iter.Insertar(crearPar(clave, dato))
