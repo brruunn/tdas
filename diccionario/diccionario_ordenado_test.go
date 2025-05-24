@@ -10,6 +10,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var TAMS_VOLUMEN_ABB = []int{12500, 25000, 50000, 100000, 200000, 400000}
+
 // --------------------------------------------------------------------------------
 // -------------------- TESTS DEL DICCIONARIO ORDENADO POR ABB --------------------
 // --------------------------------------------------------------------------------
@@ -1066,7 +1068,7 @@ func ejecutarPruebaVolumenABB(b *testing.B, n int) {
 
 func BenchmarkDiccionarioOrdenado(b *testing.B) {
 	b.Log("Prueba de stress del Diccionario Ordenado (ABB)")
-	for _, n := range TAMS_VOLUMEN {
+	for _, n := range TAMS_VOLUMEN_ABB {
 		b.Run(fmt.Sprintf("Prueba %d elementos", n), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				ejecutarPruebaVolumenABB(b, n)
@@ -1145,7 +1147,7 @@ func ejecutarPruebasVolumenIteradorABB(b *testing.B, n int) {
 
 func BenchmarkIteradorABB(b *testing.B) {
 	b.Log("Prueba de stress del Iterador del ABB")
-	for _, n := range TAMS_VOLUMEN {
+	for _, n := range TAMS_VOLUMEN_ABB {
 		b.Run(fmt.Sprintf("Prueba %d elementos", n), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				ejecutarPruebasVolumenIteradorABB(b, n)
