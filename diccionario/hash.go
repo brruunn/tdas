@@ -1,6 +1,7 @@
 package diccionario
 
 import (
+	"fmt"
 	TDALista "tdas/lista"
 )
 
@@ -34,6 +35,78 @@ const (
 	_MIN_FACTOR_DE_CARGA       = 2.0
 	_FACTOR_REDIMENSION        = 2
 )
+
+// ----------------------- FUNCIONES AUXILIARES -----------------------
+
+// De hashing
+
+func convertirABytes[K comparable](clave K) []byte {
+	return fmt.Appendf(nil, "%v", clave)
+}
+
+func hashingFNV(clave []byte, tam int) int {
+	var h uint64 = 14695981039346656037
+	for _, c := range clave {
+		h *= 1099511628211
+		h ^= uint64(c)
+	}
+	return int(h % uint64(tam))
+}
+
+func convertirAPosicion[K comparable](clave K, tam int) int {
+	claveBytes := convertirABytes(clave)
+	return hashingFNV(claveBytes, tam)
+}
+
+// Del diccionario
+
+func (hash *hashAbierto[K, V]) hashBuscar(clave K) iterListaPares[K, V] {
+	pos := convertirAPosicion(clave, hash.tam)
+	lista := hash.tabla[pos]
+
+	iter := lista.Iterador()
+	for iter.HaySiguiente() {
+		par := iter.VerActual()
+		if par.clave == clave {
+			return iter
+		}
+		iter.Siguiente()
+	}
+
+	return iter
+}
+
+func (hash *hashAbierto[K, V]) rehashear(nuevoTam int) {
+	nuevaTabla := crearTabla[K, V](nuevoTam)
+
+	for _, lista := range hash.tabla {
+		iter := lista.Iterador()
+		for iter.HaySiguiente() {
+			par := iter.VerActual()
+			pos := convertirAPosicion(par.clave, nuevoTam)
+			nuevaTabla[pos].InsertarUltimo(par)
+			iter.Siguiente()
+		}
+	}
+
+	hash.tabla = nuevaTabla
+	hash.tam = nuevoTam
+}
+
+// Del iterador externo
+
+func (iter *iterHashAbierto[K, V]) buscarLista() {
+	for iter.HaySiguiente() {
+		lista := iter.hash.tabla[iter.posActual]
+		if !lista.EstaVacia() {
+			iter.actual = lista.Iterador()
+			return
+		}
+		iter.posActual++
+	}
+}
+
+// ----------------------- FUNCIONES DE CREACIÓN ----------------------
 
 func crearTabla[K comparable, V any](tam int) []listaPares[K, V] {
 	tabla := make([]listaPares[K, V], tam)
@@ -126,7 +199,7 @@ func (hash *hashAbierto[K, V]) Iterador() IterDiccionario[K, V] {
 	return &iter
 }
 
-// -------------------- PRIMITIVAS DEL ITERADOR --------------------
+// ----------------- PRIMITIVAS DEL ITERADOR EXTERNO ------------------
 
 func (iter *iterHashAbierto[K, V]) HaySiguiente() bool {
 	return iter.posActual != iter.hash.tam
