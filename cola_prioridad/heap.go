@@ -32,33 +32,32 @@ func (h *heap[T]) upheap(pos int) {
 	}
 }
 
-func downheap[T any](arr []T, limite, pos int, cmp funcCmp[T]) {
-	for pos < limite {
-		hIzq, hDer := 2*pos+1, 2*pos+2
-
-		if hIzq < limite {
-			if hDer < limite {
-				if cmp(arr[pos], arr[hIzq]) >= 0 && cmp(arr[pos], arr[hDer]) >= 0 {
-					return
-				}
-				if cmp(arr[hIzq], arr[hDer]) < 0 {
-					swap(arr, pos, hDer)
-					pos = hDer
-					continue
-				}
-
-			} else if cmp(arr[pos], arr[hIzq]) >= 0 {
-				return
-
-			}
-
-			swap(arr, pos, hIzq)
-			pos = hIzq
-			continue
-		}
-
+func downheapRec[T any](arr []T, limite, pos, hIzq, hDer int, cmp funcCmp[T]) {
+	if hIzq >= limite {
 		return
 	}
+
+	if hDer < limite {
+		if cmp(arr[pos], arr[hIzq]) >= 0 && cmp(arr[pos], arr[hDer]) >= 0 {
+			return
+		} else if cmp(arr[hIzq], arr[hDer]) < 0 {
+			swap(arr, pos, hDer)
+			pos = hDer
+			downheapRec(arr, limite, pos, 2*pos+1, 2*pos+2, cmp)
+		}
+
+	} else if cmp(arr[pos], arr[hIzq]) >= 0 {
+		return
+
+	}
+
+	swap(arr, pos, hIzq)
+	pos = hIzq
+	downheapRec(arr, limite, pos, 2*pos+1, 2*pos+2, cmp)
+}
+
+func downheap[T any](arr []T, limite, pos int, cmp funcCmp[T]) {
+	downheapRec(arr, limite, pos, 2*pos+1, 2*pos+2, cmp)
 }
 
 func (h *heap[T]) redimensionar(nuevaCap int) {
