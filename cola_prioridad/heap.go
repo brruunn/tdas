@@ -9,7 +9,7 @@ const (
 
 type funcCmp[T any] func(T, T) int
 
-type colaConPrioridad[T any] struct {
+type heap[T any] struct {
 	datos []T
 	cant  int
 	cmp   funcCmp[T]
@@ -21,7 +21,7 @@ func swap[T any](arr []T, i, j int) {
 	arr[i], arr[j] = arr[j], arr[i]
 }
 
-func (h *colaConPrioridad[T]) upheap(pos int) {
+func (h *heap[T]) upheap(pos int) {
 	for pos > 0 {
 		padre := (pos - 1) / 2
 		if h.cmp(h.datos[pos], h.datos[padre]) <= 0 {
@@ -61,7 +61,7 @@ func downheap[T any](arr []T, limite, pos int, cmp funcCmp[T]) {
 	}
 }
 
-func (h *colaConPrioridad[T]) redimensionar(nuevaCap int) {
+func (h *heap[T]) redimensionar(nuevaCap int) {
 	nuevoArr := make([]T, nuevaCap)
 	copy(nuevoArr, h.datos)
 	h.datos = nuevoArr
@@ -76,11 +76,11 @@ func heapify[T any](arr []T, limite int, cmp funcCmp[T]) {
 // -------------------- FUNCIONES PARA EL USUARIO --------------------
 
 func CrearHeap[T any](cmp funcCmp[T]) ColaPrioridad[T] {
-	return &colaConPrioridad[T]{datos: make([]T, _CAP_INICIAL), cmp: cmp}
+	return &heap[T]{datos: make([]T, _CAP_INICIAL), cmp: cmp}
 }
 
 func CrearHeapArr[T any](arr []T, cmp funcCmp[T]) ColaPrioridad[T] {
-	h := &colaConPrioridad[T]{
+	h := &heap[T]{
 		datos: make([]T, len(arr)+_CAP_INICIAL),
 		cant:  len(arr),
 		cmp:   cmp,
@@ -103,11 +103,11 @@ func HeapSort[T any](elementos []T, cmp funcCmp[T]) {
 
 // -------------------- PRIMITIVAS DE LA COLA DE PRIORIDAD POR HEAP --------------------
 
-func (h *colaConPrioridad[T]) EstaVacia() bool {
+func (h *heap[T]) EstaVacia() bool {
 	return h.cant == 0
 }
 
-func (h *colaConPrioridad[T]) Encolar(elem T) {
+func (h *heap[T]) Encolar(elem T) {
 	if h.cant == len(h.datos) {
 		h.redimensionar(len(h.datos) * _FACT_REDIMENSION)
 	}
@@ -116,14 +116,14 @@ func (h *colaConPrioridad[T]) Encolar(elem T) {
 	h.cant++
 }
 
-func (h *colaConPrioridad[T]) VerMax() T {
+func (h *heap[T]) VerMax() T {
 	if h.EstaVacia() {
 		panic(_MENSAJE_PANIC)
 	}
 	return h.datos[0]
 }
 
-func (h *colaConPrioridad[T]) Desencolar() T {
+func (h *heap[T]) Desencolar() T {
 	dato := h.VerMax()
 	swap(h.datos, 0, h.cant-1)
 	h.cant--
@@ -134,6 +134,6 @@ func (h *colaConPrioridad[T]) Desencolar() T {
 	return dato
 }
 
-func (h *colaConPrioridad[T]) Cantidad() int {
+func (h *heap[T]) Cantidad() int {
 	return h.cant
 }
