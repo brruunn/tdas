@@ -134,10 +134,9 @@ func (hash *hashAbierto[K, V]) Guardar(clave K, dato V) {
 		iter.Borrar()
 		hash.cantidad--
 	}
-
 	iter.Insertar(crearPar(clave, dato))
-	hash.cantidad++
 
+	hash.cantidad++
 	if float32(hash.cantidad)/float32(hash.tam) >= _MAX_FACTOR_DE_CARGA {
 		hash.rehashear(hash.tam * _FACTOR_REDIMENSION)
 	}
