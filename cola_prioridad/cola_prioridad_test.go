@@ -211,21 +211,19 @@ func TestHeapSort(t *testing.T) {
 // BENCHMARKS
 
 func ejecutarPruebaVolumenHeap(b *testing.B, n int) {
-
 	/* Heap de máximos */
-
 	cmpMax := func(a, b int) int { return a - b }
 	heapMax := TDAColaPrioridad.CrearHeap(cmpMax)
 	dicHeapMax := TDADiccionario.CrearABB[int, int](cmpMax)
+
+	heapMax.Encolar(500000)
+	dicHeapMax.Guardar(500000, 500000)
 
 	/*
 		Un diccionario, nos permite verificar más rápido si
 		un número se repite o no; además, dada la raíz y el
 		rango de posibles números, no podría desbalancearse
 	*/
-
-	heapMax.Encolar(500000)
-	dicHeapMax.Guardar(500000, 500000)
 
 	cantMax := 1
 	for cantMax < n {
@@ -242,21 +240,32 @@ func ejecutarPruebaVolumenHeap(b *testing.B, n int) {
 	require.EqualValues(b, n, heapMax.Cantidad(), "Encolar muchos elementos no funciona correctamente")
 
 	okMax := true
-	for range n {
-		okMax = heapMax.VerMax() == heapMax.Desencolar()
-		if !okMax {
+	var anteriorMax int
+	for i := 0; i < n; i++ {
+		maxActual := heapMax.VerMax()
+		elemento := heapMax.Desencolar()
+
+		// Verificar coherencia entre VerMax() y Desencolar()
+		if maxActual != elemento {
+			okMax = false
 			break
 		}
+
+		// Validar orden no creciente (cada elemento debe ser <= al anterior)
+		if i > 0 && elemento > anteriorMax {
+			okMax = false
+			break
+		}
+		anteriorMax = elemento
 	}
 
-	require.True(b, okMax, "Desencolar muchos elementos no funciona correctamente")
+	require.True(b, okMax, "Desencolar muchos elementos no funciona correctamente en heap de máximos")
 	require.EqualValues(b, 0, heapMax.Cantidad())
 
 	/* Heap de mínimos */
-
 	cmpMin := func(a, b int) int { return b - a }
 	heapMin := TDAColaPrioridad.CrearHeap(cmpMin)
-	dicHeapMin := TDADiccionario.CrearABB[int, int](cmpMax)
+	dicHeapMin := TDADiccionario.CrearABB[int, int](cmpMax) // Misma comparación para el ABB
 
 	heapMin.Encolar(500000)
 	dicHeapMin.Guardar(500000, 500000)
@@ -276,14 +285,26 @@ func ejecutarPruebaVolumenHeap(b *testing.B, n int) {
 	require.EqualValues(b, n, heapMin.Cantidad(), "Encolar muchos elementos no funciona correctamente")
 
 	okMin := true
-	for range n {
-		okMin = heapMin.VerMax() == heapMin.Desencolar()
-		if !okMin {
+	var anteriorMin int
+	for i := 0; i < n; i++ {
+		minActual := heapMin.VerMax()
+		elemento := heapMin.Desencolar()
+
+		// Verificar coherencia entre VerMax() y Desencolar()
+		if minActual != elemento {
+			okMin = false
 			break
 		}
+
+		// Validar orden no decreciente (cada elemento debe ser >= al anterior)
+		if i > 0 && elemento < anteriorMin {
+			okMin = false
+			break
+		}
+		anteriorMin = elemento
 	}
 
-	require.True(b, okMin, "Desencolar muchos elementos no funciona correctamente")
+	require.True(b, okMin, "Desencolar muchos elementos no funciona correctamente en heap de mínimos")
 	require.EqualValues(b, 0, heapMin.Cantidad())
 }
 
