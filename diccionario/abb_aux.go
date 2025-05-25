@@ -13,8 +13,9 @@ func (a *abb[K, V]) abbBuscar(clave K, actual **nodoABB[K, V]) **nodoABB[K, V] {
 	}
 	if comparacion < 0 {
 		return a.abbBuscar(clave, &(*actual).izq)
+	} else {
+		return a.abbBuscar(clave, &(*actual).der)
 	}
-	return a.abbBuscar(clave, &(*actual).der)
 }
 
 // Función recursiva auxiliar de Borrar
