@@ -211,7 +211,9 @@ func TestHeapSort(t *testing.T) {
 // BENCHMARKS
 
 func ejecutarPruebaVolumenHeap(b *testing.B, n int) {
+
 	/* Heap de máximos */
+
 	cmpMax := func(a, b int) int { return a - b }
 	heapMax := TDAColaPrioridad.CrearHeap(cmpMax)
 	dicHeapMax := TDADiccionario.CrearABB[int, int](cmpMax)
@@ -240,22 +242,25 @@ func ejecutarPruebaVolumenHeap(b *testing.B, n int) {
 	require.EqualValues(b, n, heapMax.Cantidad(), "Encolar muchos elementos no funciona correctamente")
 
 	okMax := true
-	var anteriorMax int
-	for i := 0; i < n; i++ {
+	anteriorMax := heapMax.Desencolar() // El máximo elemento de todos
+	for i := 0; i < n-1; i++ {
+
+		// Validar orden decreciente
 		maxActual := heapMax.VerMax()
+		okMax = maxActual <= anteriorMax
+
+		if !okMax {
+			break
+		}
+
+		// Verificar coherencia entre lo que hay, y lo que desencolo
 		elemento := heapMax.Desencolar()
+		okMax = maxActual == elemento
 
-		// Verificar coherencia entre VerMax() y Desencolar()
-		if maxActual != elemento {
-			okMax = false
+		if !okMax {
 			break
 		}
 
-		// Validar orden no creciente (cada elemento debe ser <= al anterior)
-		if i > 0 && elemento > anteriorMax {
-			okMax = false
-			break
-		}
 		anteriorMax = elemento
 	}
 
@@ -263,6 +268,7 @@ func ejecutarPruebaVolumenHeap(b *testing.B, n int) {
 	require.EqualValues(b, 0, heapMax.Cantidad())
 
 	/* Heap de mínimos */
+
 	cmpMin := func(a, b int) int { return b - a }
 	heapMin := TDAColaPrioridad.CrearHeap(cmpMin)
 	dicHeapMin := TDADiccionario.CrearABB[int, int](cmpMax) // Misma comparación para el ABB
@@ -285,22 +291,25 @@ func ejecutarPruebaVolumenHeap(b *testing.B, n int) {
 	require.EqualValues(b, n, heapMin.Cantidad(), "Encolar muchos elementos no funciona correctamente")
 
 	okMin := true
-	var anteriorMin int
-	for i := 0; i < n; i++ {
+	anteriorMin := heapMin.Desencolar() // El mínimo elemento de todos
+	for i := 0; i < n-1; i++ {
+
+		// Validar orden creciente
 		minActual := heapMin.VerMax()
+		okMin = minActual >= anteriorMin
+
+		if !okMin {
+			break
+		}
+
+		// Verificar coherencia entre lo que hay, y lo que desencolo
 		elemento := heapMin.Desencolar()
+		okMin = minActual == elemento
 
-		// Verificar coherencia entre VerMax() y Desencolar()
-		if minActual != elemento {
-			okMin = false
+		if !okMin {
 			break
 		}
 
-		// Validar orden no decreciente (cada elemento debe ser >= al anterior)
-		if i > 0 && elemento < anteriorMin {
-			okMin = false
-			break
-		}
 		anteriorMin = elemento
 	}
 
@@ -346,14 +355,27 @@ func ejecutarPruebaVolumenHeapArr(b *testing.B, n int) {
 	require.EqualValues(b, n, dic.Cantidad(), "La cantidad de elementos es incorrecta")
 	require.EqualValues(b, n, len(arr), "La cantidad de elementos es incorrecta")
 
-	heapMax := TDAColaPrioridad.CrearHeapArr(arr, cmpMax)
+	heapMax := TDAColaPrioridad.CrearHeapArr(arr, cmpMax) // Se tiene que comportar como un heap cualquiera
 
 	okMax := true
-	for range n {
-		okMax = heapMax.VerMax() == heapMax.Desencolar()
+	anteriorMax := heapMax.Desencolar()
+	for i := 0; i < n-1; i++ {
+
+		maxActual := heapMax.VerMax()
+		okMax = maxActual <= anteriorMax
+
 		if !okMax {
 			break
 		}
+
+		elemento := heapMax.Desencolar()
+		okMax = maxActual == elemento
+
+		if !okMax {
+			break
+		}
+
+		anteriorMax = elemento
 	}
 
 	require.True(b, okMax, "Desencolar muchos elementos no funciona correctamente")
@@ -365,11 +387,24 @@ func ejecutarPruebaVolumenHeapArr(b *testing.B, n int) {
 	heapMin := TDAColaPrioridad.CrearHeapArr(arr, cmpMin) // Como el arreglo original no cambia, podemos reutilizarlo
 
 	okMin := true
-	for range n {
-		okMin = heapMin.VerMax() == heapMin.Desencolar()
+	anteriorMin := heapMin.Desencolar()
+	for i := 0; i < n-1; i++ {
+
+		minActual := heapMin.VerMax()
+		okMin = minActual >= anteriorMin
+
 		if !okMin {
 			break
 		}
+
+		elemento := heapMin.Desencolar()
+		okMin = minActual == elemento
+
+		if !okMin {
+			break
+		}
+
+		anteriorMin = elemento
 	}
 
 	require.True(b, okMin, "Desencolar muchos elementos no funciona correctamente")
