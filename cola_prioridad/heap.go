@@ -37,22 +37,24 @@ func downheapRec[T any](arr []T, limite, pos, hijoIzq, hijoDer int, cmp funcCmp[
 		return
 	}
 
-	if hijoDer < limite {
-		if cmp(arr[pos], arr[hijoIzq]) >= 0 && cmp(arr[pos], arr[hijoDer]) >= 0 {
-			return
-		} else if cmp(arr[hijoIzq], arr[hijoDer]) < 0 {
-			swap(arr, pos, hijoDer)
-			pos = hijoDer
-			downheapRec(arr, limite, pos, 2*pos+1, 2*pos+2, cmp)
-		}
-
-	} else if cmp(arr[pos], arr[hijoIzq]) >= 0 {
+	if hijoDer < limite && (cmp(arr[pos], arr[hijoIzq]) >= 0 && cmp(arr[pos], arr[hijoDer]) >= 0) {
+		return
+	}
+	if hijoDer >= limite && cmp(arr[pos], arr[hijoIzq]) >= 0 {
 		return
 	}
 
-	swap(arr, pos, hijoIzq)
-	pos = hijoIzq
-	downheapRec(arr, limite, pos, 2*pos+1, 2*pos+2, cmp)
+	if hijoDer < limite && cmp(arr[hijoIzq], arr[hijoDer]) < 0 {
+		swap(arr, pos, hijoDer)
+		pos = hijoDer
+		downheapRec(arr, limite, pos, 2*pos+1, 2*pos+2, cmp)
+
+	} else {
+		swap(arr, pos, hijoIzq)
+		pos = hijoIzq
+		downheapRec(arr, limite, pos, 2*pos+1, 2*pos+2, cmp)
+
+	}
 }
 
 func downheap[T any](arr []T, limite, pos int, cmp funcCmp[T]) {
