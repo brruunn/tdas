@@ -21,38 +21,37 @@ func swap[T any](arr []T, i, j int) {
 	arr[i], arr[j] = arr[j], arr[i]
 }
 
-func (h *heap[T]) upheap(pos int) {
+func (heap *heap[T]) upheap(pos int) {
 	for pos > 0 {
 		padre := (pos - 1) / 2
-		if h.cmp(h.datos[pos], h.datos[padre]) <= 0 {
+		if heap.cmp(heap.datos[pos], heap.datos[padre]) <= 0 {
 			return
 		}
-		swap(h.datos, pos, padre)
+		swap(heap.datos, pos, padre)
 		pos = padre
 	}
 }
 
-func downheapRec[T any](arr []T, limite, pos, hIzq, hDer int, cmp funcCmp[T]) {
-	if hIzq >= limite {
+func downheapRec[T any](arr []T, limite, pos, hijoIzq, hijoDer int, cmp funcCmp[T]) {
+	if hijoIzq >= limite {
 		return
 	}
 
-	if hDer < limite {
-		if cmp(arr[pos], arr[hIzq]) >= 0 && cmp(arr[pos], arr[hDer]) >= 0 {
+	if hijoDer < limite {
+		if cmp(arr[pos], arr[hijoIzq]) >= 0 && cmp(arr[pos], arr[hijoDer]) >= 0 {
 			return
-		} else if cmp(arr[hIzq], arr[hDer]) < 0 {
-			swap(arr, pos, hDer)
-			pos = hDer
+		} else if cmp(arr[hijoIzq], arr[hijoDer]) < 0 {
+			swap(arr, pos, hijoDer)
+			pos = hijoDer
 			downheapRec(arr, limite, pos, 2*pos+1, 2*pos+2, cmp)
 		}
 
-	} else if cmp(arr[pos], arr[hIzq]) >= 0 {
+	} else if cmp(arr[pos], arr[hijoIzq]) >= 0 {
 		return
-
 	}
 
-	swap(arr, pos, hIzq)
-	pos = hIzq
+	swap(arr, pos, hijoIzq)
+	pos = hijoIzq
 	downheapRec(arr, limite, pos, 2*pos+1, 2*pos+2, cmp)
 }
 
@@ -60,10 +59,10 @@ func downheap[T any](arr []T, limite, pos int, cmp funcCmp[T]) {
 	downheapRec(arr, limite, pos, 2*pos+1, 2*pos+2, cmp)
 }
 
-func (h *heap[T]) redimensionar(nuevaCap int) {
+func (heap *heap[T]) redimensionar(nuevaCap int) {
 	nuevoArr := make([]T, nuevaCap)
-	copy(nuevoArr, h.datos)
-	h.datos = nuevoArr
+	copy(nuevoArr, heap.datos)
+	heap.datos = nuevoArr
 }
 
 func heapify[T any](arr []T, limite int, cmp funcCmp[T]) {
@@ -79,14 +78,14 @@ func CrearHeap[T any](cmp funcCmp[T]) ColaPrioridad[T] {
 }
 
 func CrearHeapArr[T any](arr []T, cmp funcCmp[T]) ColaPrioridad[T] {
-	h := &heap[T]{
+	heap := &heap[T]{
 		datos: make([]T, len(arr)+_CAP_INICIAL),
 		cant:  len(arr),
 		cmp:   cmp,
 	}
-	copy(h.datos, arr)
-	heapify(h.datos, h.cant, h.cmp)
-	return h
+	copy(heap.datos, arr)
+	heapify(heap.datos, heap.cant, heap.cmp)
+	return heap
 }
 
 func HeapSort[T any](elementos []T, cmp funcCmp[T]) {
@@ -100,39 +99,39 @@ func HeapSort[T any](elementos []T, cmp funcCmp[T]) {
 	}
 }
 
-// -------------------- PRIMITIVAS DE LA COLA DE PRIORIDAD POR HEAP --------------------
+// -------------------- PRIMITIVAS DE LA COLA DE PRIORIDAD --------------------
 
-func (h *heap[T]) EstaVacia() bool {
-	return h.cant == 0
+func (heap *heap[T]) EstaVacia() bool {
+	return heap.cant == 0
 }
 
-func (h *heap[T]) Encolar(elem T) {
-	if h.cant == len(h.datos) {
-		h.redimensionar(len(h.datos) * _FACT_REDIMENSION)
+func (heap *heap[T]) Encolar(elemento T) {
+	if heap.cant == len(heap.datos) {
+		heap.redimensionar(len(heap.datos) * _FACT_REDIMENSION)
 	}
-	h.datos[h.cant] = elem
-	h.upheap(h.cant)
-	h.cant++
+	heap.datos[heap.cant] = elemento
+	heap.upheap(heap.cant)
+	heap.cant++
 }
 
-func (h *heap[T]) VerMax() T {
-	if h.EstaVacia() {
+func (heap *heap[T]) VerMax() T {
+	if heap.EstaVacia() {
 		panic(_MENSAJE_PANIC)
 	}
-	return h.datos[0]
+	return heap.datos[0]
 }
 
-func (h *heap[T]) Desencolar() T {
-	dato := h.VerMax()
-	swap(h.datos, 0, h.cant-1)
-	h.cant--
-	downheap(h.datos, h.cant, 0, h.cmp)
-	if (h.cant*_COND_REDUCCION) > _CAP_INICIAL && (h.cant*_COND_REDUCCION) <= len(h.datos) {
-		h.redimensionar(len(h.datos) / _FACT_REDIMENSION)
+func (heap *heap[T]) Desencolar() T {
+	elemento := heap.VerMax()
+	swap(heap.datos, 0, heap.cant-1)
+	heap.cant--
+	downheap(heap.datos, heap.cant, 0, heap.cmp)
+	if (heap.cant*_COND_REDUCCION) > _CAP_INICIAL && (heap.cant*_COND_REDUCCION) <= len(heap.datos) {
+		heap.redimensionar(len(heap.datos) / _FACT_REDIMENSION)
 	}
-	return dato
+	return elemento
 }
 
-func (h *heap[T]) Cantidad() int {
-	return h.cant
+func (heap *heap[T]) Cantidad() int {
+	return heap.cant
 }
