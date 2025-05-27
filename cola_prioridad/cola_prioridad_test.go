@@ -241,30 +241,32 @@ func ejecutarPruebaVolumenHeap(b *testing.B, n int) {
 	require.EqualValues(b, n, dicHeapMax.Cantidad(), "La cantidad de elementos es incorrecta")
 	require.EqualValues(b, n, heapMax.Cantidad(), "Encolar muchos elementos no funciona correctamente")
 
-	okMax := true
+	okMaxOrden := true
+	okMaxDesencolado := true
 	anteriorMax := heapMax.Desencolar() // El máximo elemento de todos
 	for i := 0; i < n-1; i++ {
 
 		// Validar orden decreciente
 		maxActual := heapMax.VerMax()
-		okMax = maxActual <= anteriorMax
+		okMaxOrden = maxActual <= anteriorMax
 
-		if !okMax {
+		if !okMaxOrden {
 			break
 		}
 
 		// Verificar coherencia entre lo que hay, y lo que desencolo
 		elemento := heapMax.Desencolar()
-		okMax = maxActual == elemento
+		okMaxDesencolado = maxActual == elemento
 
-		if !okMax {
+		if !okMaxDesencolado {
 			break
 		}
 
 		anteriorMax = elemento
 	}
 
-	require.True(b, okMax, "Desencolar muchos elementos no funciona correctamente en heap de máximos")
+	require.True(b, okMaxOrden, "Los elementos no están ordenados de mayor a menor, en el heap de máximos")
+	require.True(b, okMaxDesencolado, "Desencolar muchos elementos no funciona correctamente, en el heap de máximos")
 	require.EqualValues(b, 0, heapMax.Cantidad())
 
 	/* Heap de mínimos */
@@ -290,30 +292,32 @@ func ejecutarPruebaVolumenHeap(b *testing.B, n int) {
 	require.EqualValues(b, n, dicHeapMin.Cantidad(), "La cantidad de elementos es incorrecta")
 	require.EqualValues(b, n, heapMin.Cantidad(), "Encolar muchos elementos no funciona correctamente")
 
-	okMin := true
+	okMinOrden := true
+	okMinDesencolado := true
 	anteriorMin := heapMin.Desencolar() // El mínimo elemento de todos
 	for i := 0; i < n-1; i++ {
 
 		// Validar orden creciente
 		minActual := heapMin.VerMax()
-		okMin = minActual >= anteriorMin
+		okMinOrden = minActual >= anteriorMin
 
-		if !okMin {
+		if !okMinOrden {
 			break
 		}
 
 		// Verificar coherencia entre lo que hay, y lo que desencolo
 		elemento := heapMin.Desencolar()
-		okMin = minActual == elemento
+		okMinDesencolado = minActual == elemento
 
-		if !okMin {
+		if !okMinDesencolado {
 			break
 		}
 
 		anteriorMin = elemento
 	}
 
-	require.True(b, okMin, "Desencolar muchos elementos no funciona correctamente en heap de mínimos")
+	require.True(b, okMinOrden, "Los elementos no están ordenados de menor a mayor, en el heap de mínimos")
+	require.True(b, okMinDesencolado, "Desencolar muchos elementos no funciona correctamente, en el heap de mínimos")
 	require.EqualValues(b, 0, heapMin.Cantidad())
 }
 
@@ -357,28 +361,30 @@ func ejecutarPruebaVolumenHeapArr(b *testing.B, n int) {
 
 	heapMax := TDAColaPrioridad.CrearHeapArr(arr, cmpMax) // Se tiene que comportar como un heap cualquiera
 
-	okMax := true
+	okMaxOrden := true
+	okMaxDesencolado := true
 	anteriorMax := heapMax.Desencolar()
 	for i := 0; i < n-1; i++ {
 
 		maxActual := heapMax.VerMax()
-		okMax = maxActual <= anteriorMax
+		okMaxOrden = maxActual <= anteriorMax
 
-		if !okMax {
+		if !okMaxOrden {
 			break
 		}
 
 		elemento := heapMax.Desencolar()
-		okMax = maxActual == elemento
+		okMaxDesencolado = maxActual == elemento
 
-		if !okMax {
+		if !okMaxDesencolado {
 			break
 		}
 
 		anteriorMax = elemento
 	}
 
-	require.True(b, okMax, "Desencolar muchos elementos no funciona correctamente")
+	require.True(b, okMaxOrden, "Los elementos no están ordenados de mayor a menor, en el heap de máximos de un arreglo")
+	require.True(b, okMaxDesencolado, "Desencolar muchos elementos no funciona correctamente, en el heap de máximos de un arreglo")
 	require.EqualValues(b, 0, heapMax.Cantidad())
 
 	/* Heap de mínimos */
@@ -386,28 +392,30 @@ func ejecutarPruebaVolumenHeapArr(b *testing.B, n int) {
 	cmpMin := func(a, b int) int { return b - a }
 	heapMin := TDAColaPrioridad.CrearHeapArr(arr, cmpMin) // Como el arreglo original no cambia, podemos reutilizarlo
 
-	okMin := true
+	okMinOrden := true
+	okMinDesencolado := true
 	anteriorMin := heapMin.Desencolar()
 	for i := 0; i < n-1; i++ {
 
 		minActual := heapMin.VerMax()
-		okMin = minActual >= anteriorMin
+		okMinOrden = minActual >= anteriorMin
 
-		if !okMin {
+		if !okMinOrden {
 			break
 		}
 
 		elemento := heapMin.Desencolar()
-		okMin = minActual == elemento
+		okMinDesencolado = minActual == elemento
 
-		if !okMin {
+		if !okMinDesencolado {
 			break
 		}
 
 		anteriorMin = elemento
 	}
 
-	require.True(b, okMin, "Desencolar muchos elementos no funciona correctamente")
+	require.True(b, okMinOrden, "Los elementos no están ordenados de menor a mayor, en el heap de mínimos de un arreglo")
+	require.True(b, okMinDesencolado, "Desencolar muchos elementos no funciona correctamente, en el heap de mínimos de un arreglo")
 	require.EqualValues(b, 0, heapMin.Cantidad())
 }
 
